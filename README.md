@@ -18,8 +18,8 @@ OCR** for detection, and **Faker** for realistic fake replacements.
 
 |                  | Link                  |
 | ---------------- | --------------------- |
-| 🌐 Frontend      | `<your-vercel-url>` |
-| ⚙️ Backend API | `<your-render-url>` |
+| 🌐 Frontend      | `https://pii-redaction-tool-livid.vercel.app/` |
+| ⚙️ Backend API | `https://pii-redaction-tool-99vj.onrender.com` |
 
 > ⚠️ **First load notice**: if the backend is on Render's free tier, it
 > spins down after 15 minutes of inactivity. The first request after that
