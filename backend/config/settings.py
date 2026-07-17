@@ -2,6 +2,7 @@
 runs unmodified in local dev, Docker, and Railway."""
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -25,7 +26,24 @@ class Settings(BaseSettings):
     # -- Security --
     API_KEY: str = ""  # empty disables auth, for local dev only
     SECRET_KEY: str = "dev-only-insecure-secret-change-me"  # signs download tokens
-    CORS_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    # Plain str, not list[str]: pydantic-settings runs json.loads() on any env
+    # var mapped to a list field, so a plain comma-separated value (the natural
+    # thing to type into Render's dashboard) crashes at import time with a
+    # JSONDecodeError before the app even starts. Parsed manually below to
+    # accept either a JSON array (`["a","b"]`) or a comma-separated string.
+    CORS_ORIGINS_RAW: str = Field(default="http://localhost:3000", alias="CORS_ORIGINS")
+
+    @property
+    def CORS_ORIGINS(self) -> list[str]:  # noqa: N802 - keeps the env var name stable
+        raw = self.CORS_ORIGINS_RAW.strip()
+        if raw.startswith("["):
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                parsed = None
+            if isinstance(parsed, list):
+                return [str(origin).strip() for origin in parsed if str(origin).strip()]
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
     # -- Database --
     DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'storage' / 'pii_redactor.db'}"

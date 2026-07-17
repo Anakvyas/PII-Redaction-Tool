@@ -119,7 +119,10 @@ export const api = {
     redact: (jobId: string) => request<JobOut>(`/jobs/${jobId}/redact`, { method: "POST" }),
     downloadUrl: (jobId: string) => request<DownloadOut>(`/jobs/${jobId}/download`),
     artifacts: (jobId: string) => request<ArtifactDownloadOut>(`/jobs/${jobId}/artifacts`),
-    streamUrl: (jobId: string) => `${API_URL}/jobs/${jobId}/stream`,
+    // EventSource can't attach custom headers, so when an API key is
+    // configured it has to travel as a query param instead of X-API-Key.
+    streamUrl: (jobId: string) =>
+      API_KEY ? `${API_URL}/jobs/${jobId}/stream?api_key=${encodeURIComponent(API_KEY)}` : `${API_URL}/jobs/${jobId}/stream`,
   },
 
   evaluation: {
