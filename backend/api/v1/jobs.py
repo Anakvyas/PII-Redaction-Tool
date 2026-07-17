@@ -17,7 +17,7 @@ from core.exceptions import InvalidJobStateError
 from models.job import JobModel
 from schemas.common import JobStatus
 from schemas.detection import DetectionOut, DetectionReviewUpdate
-from schemas.job import DownloadOut, JobCreate, JobDetailOut, JobOut
+from schemas.job import ArtifactDownloadOut, DownloadOut, JobCreate, JobDetailOut, JobOut
 from services.job_service import JobService, detection_to_out, run_detection_job
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -32,6 +32,11 @@ async def create_job(
     job = service.create(payload.document_id, payload.policy_id, payload.pii_types)
     background_tasks.add_task(run_detection_job, job.id)
     return service.to_out(job)
+
+
+@router.get("", response_model=list[JobOut])
+async def list_jobs(service: JobService = Depends(get_job_service)) -> list[JobOut]:
+    return [service.to_out(job) for job in service.list_all()]
 
 
 @router.get("/{job_id}", response_model=JobDetailOut)
@@ -74,6 +79,30 @@ async def download_job(job_id: str, service: JobService = Depends(get_job_servic
     settings = get_settings()
     url = get_storage().signed_url(job.output_storage_uri, expires_in=settings.SIGNED_URL_TTL_SECONDS)
     return DownloadOut(url=url, expires_in=settings.SIGNED_URL_TTL_SECONDS)
+
+
+@router.get("/{job_id}/artifacts", response_model=ArtifactDownloadOut)
+async def job_artifacts(job_id: str, service: JobService = Depends(get_job_service)) -> ArtifactDownloadOut:
+    """Signed URLs for the replacement_map.json / audit_log.json produced by
+    a completed redaction, for the frontend's audit log table and downloads."""
+    job = service.get(job_id)
+    artifacts = (job.summary or {}).get("artifacts") or {}
+    if not artifacts:
+        return ArtifactDownloadOut()
+
+    settings = get_settings()
+    storage = get_storage()
+
+    def _signed(storage_uri: str | None) -> DownloadOut | None:
+        if not storage_uri:
+            return None
+        url = storage.signed_url(storage_uri, expires_in=settings.SIGNED_URL_TTL_SECONDS)
+        return DownloadOut(url=url, expires_in=settings.SIGNED_URL_TTL_SECONDS)
+
+    return ArtifactDownloadOut(
+        replacement_map=_signed(artifacts.get("replacement_map")),
+        audit_log=_signed(artifacts.get("audit_log")),
+    )
 
 
 @router.get("/{job_id}/stream")

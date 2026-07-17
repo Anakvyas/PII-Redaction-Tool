@@ -46,3 +46,8 @@ class JobDetailOut(JobOut):
 class DownloadOut(BaseModel):
     url: str
     expires_in: int
+
+
+class ArtifactDownloadOut(BaseModel):
+    replacement_map: DownloadOut | None = None
+    audit_log: DownloadOut | None = None

@@ -7,7 +7,10 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from api.v1.deps import get_document_service
+from config.settings import get_settings
+from core.container import get_storage
 from schemas.document import DocumentOut
+from schemas.job import DownloadOut
 from services.document_service import DocumentService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -34,3 +37,15 @@ async def get_document(
     document_id: str, service: DocumentService = Depends(get_document_service)
 ) -> DocumentOut:
     return service.get_out(document_id)
+
+
+@router.get("/{document_id}/download", response_model=DownloadOut)
+async def download_document(
+    document_id: str, service: DocumentService = Depends(get_document_service)
+) -> DownloadOut:
+    """Signed URL for the original uploaded file, so the frontend can preview
+    it (with PII highlights overlaid) before any redaction has run."""
+    document = service.get(document_id)
+    settings = get_settings()
+    url = get_storage().signed_url(document.storage_uri, expires_in=settings.SIGNED_URL_TTL_SECONDS)
+    return DownloadOut(url=url, expires_in=settings.SIGNED_URL_TTL_SECONDS)
