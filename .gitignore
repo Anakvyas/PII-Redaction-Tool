@@ -1,0 +1,34 @@
+# -- OS / editor --
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# -- Python (backend) --
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# -- Node / Next.js (frontend) --
+node_modules/
+.next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -- Env files (never commit secrets) --
+.env
+.env.local
+.env.*.local
+
+# -- App data (uploaded/redacted files, local db) --
+backend/storage/
+*.db
+*.sqlite3
