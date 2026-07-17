@@ -1,44 +1,16 @@
-"""Per-entity text replacement strategies. `black_box` is PDF-only and is
-handled directly by replacement/pdf_redactor.py (it draws glyph-removing
-annotations rather than substituting text), so it isn't a text strategy here —
-callers fall back to the mask token for it in non-visual contexts (DOCX)."""
+"""Per-entity text replacement strategies."""
 from __future__ import annotations
 
 from datetime import datetime
 
 from schemas.common import PIIEntity, PIIType, RedactionStrategy
-
-_PSEUDONYM_TEMPLATES: dict[PIIType, str] = {
-    PIIType.PERSON: "Person {n}",
-    PIIType.EMAIL: "user{n}@example.com",
-    PIIType.PHONE: "555-01{n:02d}-0000",
-    PIIType.COMPANY: "Company {n}",
-    PIIType.ADDRESS: "{n} Example St, Springfield",
-    PIIType.SSN: "000-00-{n:04d}",
-    PIIType.CREDIT_CARD: "4111-1111-1111-{n:04d}",
-    PIIType.DOB: "01/01/1970",
-    PIIType.IP_ADDRESS: "10.0.0.{n}",
-}
+from replacement.faker_engine import FakerReplacementEngine
 
 _DATE_FORMATS = ("%m/%d/%Y", "%m-%d-%Y", "%Y-%m-%d", "%B %d, %Y", "%b %d, %Y", "%B %d %Y")
 
 
 def mask_replacement(entity: PIIEntity) -> str:
     return f"[REDACTED-{entity.effective_type().value.upper()}]"
-
-
-def pseudonymize_replacement(
-    entity: PIIEntity, consistency_map: dict[str, str], counters: dict[PIIType, int]
-) -> str:
-    """Same source value always maps to the same fake value within a job."""
-    if entity.raw_value in consistency_map:
-        return consistency_map[entity.raw_value]
-    pii_type = entity.effective_type()
-    counters[pii_type] = counters.get(pii_type, 0) + 1
-    template = _PSEUDONYM_TEMPLATES.get(pii_type, "REDACTED-{n}")
-    value = template.format(n=counters[pii_type])
-    consistency_map[entity.raw_value] = value
-    return value
 
 
 def _try_parse_date(raw: str) -> datetime | None:
@@ -83,11 +55,12 @@ def generalize_replacement(entity: PIIEntity) -> str:
 def resolve_replacement(
     entity: PIIEntity,
     strategy: RedactionStrategy,
-    consistency_map: dict[str, str],
-    counters: dict[PIIType, int],
+    faker_engine: FakerReplacementEngine,
 ) -> str:
     if strategy == RedactionStrategy.PSEUDONYMIZE:
-        return pseudonymize_replacement(entity, consistency_map, counters)
+        return faker_engine.pseudonymize(entity)
     if strategy == RedactionStrategy.GENERALIZE:
-        return generalize_replacement(entity)
-    return mask_replacement(entity)  # MASK, and BLACK_BOX's non-visual fallback
+        return faker_engine.register_static_replacement(entity, generalize_replacement(entity))
+    return faker_engine.register_static_replacement(
+        entity, mask_replacement(entity)
+    )  # MASK, and BLACK_BOX's non-visual fallback

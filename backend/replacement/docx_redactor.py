@@ -4,9 +4,27 @@ Walks the document with the exact same traversal `services/extraction/docx_extra
 used, so the character offsets computed here always match the ones detection ran against."""
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from schemas.common import PIIEntity, PIIType, RedactionStrategy
 from services.extraction.docx_extractor import iter_docx_runs
-from replacement.strategies import resolve_replacement
+from replacement.faker_engine import AuditEntry, FakerReplacementEngine
+from replacement.engine import PlannedReplacement, plan_replacements
+
+
+@dataclass(frozen=True)
+class DocxRedactionResult:
+    counts_by_type: dict[PIIType, int]
+    audit_entries: list[AuditEntry]
+    faker_engine: FakerReplacementEngine
+
+
+class _RunSegment:
+    def __init__(self, run: object | None, text: str, offset: int) -> None:
+        self.run = run
+        self.text = text
+        self.offset = offset
+        self.end = offset + len(text)
 
 
 def redact_docx(
@@ -14,59 +32,56 @@ def redact_docx(
     output_path: str,
     entities: list[PIIEntity],
     strategy_map: dict[PIIType, RedactionStrategy],
-) -> dict[PIIType, int]:
+) -> DocxRedactionResult:
     import docx
 
     document = docx.Document(source_path)
-    ordered_entities = sorted(entities, key=lambda e: e.span.start)
-    consistency_map: dict[str, str] = {}
-    counters: dict[PIIType, int] = {}
-    counts_by_type: dict[PIIType, int] = {}
-    already_labeled: set[str] = set()
-
+    segments: list[_RunSegment] = []
     offset = 0
     for run, text, _para_idx, _run_idx in iter_docx_runs(document):
-        block_len = len(text)
-        block_end = offset + block_len
-        overlapping = [e for e in ordered_entities if e.span.start < block_end and e.span.end > offset]
+        if text:
+            segments.append(_RunSegment(run=run, text=text, offset=offset))
+            offset += len(text)
 
-        if overlapping and run is not None:
-            new_text = _apply_replacements(
-                text, offset, overlapping, strategy_map, consistency_map, counters, already_labeled
-            )
-            run.text = new_text
-            for entity in overlapping:
-                if entity.id not in already_labeled:
-                    key = entity.effective_type()
-                    counts_by_type[key] = counts_by_type.get(key, 0) + 1
-                    already_labeled.add(entity.id)
-
-        offset = block_end
-
+    source_text = "".join(segment.text for segment in segments)
+    plan = plan_replacements(entities, source_text, strategy_map)
+    _apply_planned_replacements(segments, plan.replacements)
     document.save(output_path)
-    return counts_by_type
+    return DocxRedactionResult(
+        counts_by_type=plan.counts_by_type,
+        audit_entries=plan.audit_entries,
+        faker_engine=plan.faker_engine,
+    )
 
 
-def _apply_replacements(
-    text: str,
-    block_offset: int,
-    entities: list[PIIEntity],
-    strategy_map: dict[PIIType, RedactionStrategy],
-    consistency_map: dict[str, str],
-    counters: dict[PIIType, int],
-    already_labeled: set[str],
-) -> str:
-    # Apply right-to-left so earlier local indices stay valid as we edit.
-    result = text
-    for entity in sorted(entities, key=lambda e: e.span.start, reverse=True):
-        local_start = max(0, entity.span.start - block_offset)
-        local_end = min(len(text), entity.span.end - block_offset)
-        if entity.id in already_labeled:
-            # Entity was already fully labeled in an earlier run this document
-            # traversal already passed — just drop this run's leftover portion.
-            replacement = ""
-        else:
-            strategy = strategy_map.get(entity.effective_type(), RedactionStrategy.MASK)
-            replacement = resolve_replacement(entity, strategy, consistency_map, counters)
-        result = result[:local_start] + replacement + result[local_end:]
-    return result
+def _apply_planned_replacements(
+    segments: list[_RunSegment],
+    replacements: list[PlannedReplacement],
+) -> None:
+    text_by_run: dict[int, str] = {
+        id(segment.run): segment.text
+        for segment in segments
+        if segment.run is not None
+    }
+
+    for replacement in sorted(replacements, key=lambda r: r.entity.span.start, reverse=True):
+        span = replacement.entity.span
+        overlapping = [
+            segment
+            for segment in segments
+            if segment.run is not None and segment.offset < span.end and span.start < segment.end
+        ]
+        if not overlapping:
+            continue
+
+        for index, segment in enumerate(overlapping):
+            run_id = id(segment.run)
+            local_start = max(0, span.start - segment.offset)
+            local_end = min(len(segment.text), span.end - segment.offset)
+            inserted = replacement.replacement if index == 0 else ""
+            current = text_by_run[run_id]
+            text_by_run[run_id] = current[:local_start] + inserted + current[local_end:]
+
+    for segment in segments:
+        if segment.run is not None:
+            segment.run.text = text_by_run[id(segment.run)]

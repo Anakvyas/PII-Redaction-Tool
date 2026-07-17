@@ -15,6 +15,8 @@ from schemas.common import DocumentFormat, PIIEntity, PIIType, RedactionStrategy
 @dataclass
 class ReplacementResult:
     output_path: str
+    replacement_map_path: str
+    audit_log_path: str
     summary: RedactionSummary
 
 
@@ -33,12 +35,27 @@ class ReplacementPipeline:
         suffix = Path(source_path).suffix
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             output_path = tmp.name
+        artifact_dir = Path(output_path).parent
+        artifact_stem = Path(output_path).stem
+        replacement_map_path = str(artifact_dir / f"{artifact_stem}_replacement_map.json")
+        audit_log_path = str(artifact_dir / f"{artifact_stem}_audit_log.json")
 
         if document_format == DocumentFormat.DOCX:
-            counts = redact_docx(source_path, output_path, approved, strategy_map)
+            redaction = redact_docx(source_path, output_path, approved, strategy_map)
         elif document_format == DocumentFormat.PDF:
-            counts = redact_pdf(source_path, output_path, approved, strategy_map)
+            redaction = redact_pdf(source_path, output_path, approved, strategy_map)
         else:
             raise ValueError(f"Unsupported document format: {document_format}")
 
-        return ReplacementResult(output_path=output_path, summary=build_summary(counts))
+        redaction.faker_engine.write_artifacts(
+            replacement_map_path=replacement_map_path,
+            audit_log_path=audit_log_path,
+            audit_entries=redaction.audit_entries,
+        )
+
+        return ReplacementResult(
+            output_path=output_path,
+            replacement_map_path=replacement_map_path,
+            audit_log_path=audit_log_path,
+            summary=build_summary(redaction.counts_by_type),
+        )

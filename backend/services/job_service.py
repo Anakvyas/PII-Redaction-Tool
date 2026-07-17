@@ -101,11 +101,19 @@ class JobService:
                 policy_strategy_map=policy.strategy_map,
                 confidence_floor=policy.confidence_floor,
             )
-            key = f"redacted/{job.id}{Path(local_path).suffix}"
-            job.output_storage_uri = self._storage.save_path(key, result.output_path)
+            output_key = f"redacted/{job.id}{Path(local_path).suffix}"
+            map_key = f"redacted/{job.id}/replacement_map.json"
+            audit_key = f"redacted/{job.id}/audit_log.json"
+            job.output_storage_uri = self._storage.save_path(output_key, result.output_path)
+            replacement_map_uri = self._storage.save_path(map_key, result.replacement_map_path)
+            audit_log_uri = self._storage.save_path(audit_key, result.audit_log_path)
             job.summary = {
                 "counts_by_type": {k.value: v for k, v in result.summary.counts_by_type.items()},
                 "total_redacted": result.summary.total_redacted,
+                "artifacts": {
+                    "replacement_map": replacement_map_uri,
+                    "audit_log": audit_log_uri,
+                },
             }
             job.status = JobStatus.COMPLETED.value
             job.completed_at = datetime.now(timezone.utc)

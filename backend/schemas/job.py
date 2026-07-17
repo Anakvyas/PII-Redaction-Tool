@@ -14,9 +14,15 @@ class JobCreate(BaseModel):
     pii_types: list[PIIType] = Field(default_factory=lambda: list(PIIType))
 
 
+class RedactionArtifactsOut(BaseModel):
+    replacement_map: str | None = None
+    audit_log: str | None = None
+
+
 class RedactionSummaryOut(BaseModel):
     counts_by_type: dict[PIIType, int] = Field(default_factory=dict)
     total_redacted: int = 0
+    artifacts: RedactionArtifactsOut | None = None
 
 
 class JobOut(BaseModel):
