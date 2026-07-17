@@ -35,6 +35,7 @@ peeled off.
 | Source code | `backend/` (detection + redaction + evaluation), `frontend/` (UI) |
 | README (approach, tradeoffs, FP/FN) | this file — see [Detection approach](#detection-approach) and [Tradeoffs, false positives, false negatives](#tradeoffs-false-positives-and-false-negatives) |
 | Evaluation approach + report (accuracy/precision/recall) | [Evaluation](#evaluation) — `backend/evaluation/entity_evaluator.py`, `backend/scripts/evaluate.py` |
+| *Bonus, not required*: PII inside embedded images (e.g. a scanned ID card) | [Images embedded in a document](#images-embedded-in-a-document) — `backend/services/image_pii_service.py` |
 
 ## Quick start — the core script
 
@@ -73,6 +74,9 @@ ground truth.
 ```mermaid
 flowchart LR
     A["DOCX / PDF"] --> B["Extract text<br/>+ layout offsets"]
+    A --> J["Embedded images<br/>(DOCX only)"]
+    J --> K["OCR each image<br/>(Tesseract)"]
+    K --> C
     B --> C{"Detect PII"}
     C --> C1["Regex<br/>SSN, card, phone,<br/>email, IP, address"]
     C --> C2["spaCy NER<br/>person, company"]
@@ -84,7 +88,7 @@ flowchart LR
     E -- yes --> F["Auto-approved"]
     E -- no --> G["Needs human review<br/>(web app only)"]
     G --> F
-    F --> H["Replace per policy<br/>mask / pseudonymize /<br/>generalize / black-box"]
+    F --> H["Replace per policy<br/>mask / pseudonymize /<br/>generalize / black-box<br/>(images: black-box in place)"]
     H --> I["Redacted DOCX/PDF<br/>+ replacement_map.json<br/>+ audit_log.json"]
 ```
 
@@ -176,6 +180,50 @@ Number"), not a "Label: Name" field.
 Nothing else changes — the pipeline, merge/corroboration logic, replacement
 engine, and API are all written against the enum and the detector interface,
 not against a hardcoded type list.
+
+### Images embedded in a document
+
+A scanned ID card, screenshot, or photo pasted into a DOCX isn't just inert
+pixels here. `services/image_pii_service.py` OCRs every embedded image
+(Tesseract, via `pytesseract`), runs the exact same detection pipeline
+against the extracted text, and black-boxes the matching word regions
+directly in the image — captured in the audit log under each image's
+`image_filename` (the part's actual package path, e.g.
+`/word/media/image4.png` — not the generic `image.png`/`image.jpeg` name
+python-docx substitutes when the original filename wasn't preserved, which
+collides across multiple images in the same document).
+
+**Scope, stated plainly**: this redacts OCR-detected *English* text only.
+No face detection (a photo on an ID card is untouched — flagged as a
+known gap, not attempted here), and no recognition of non-US/non-generic
+national ID numbers (a PAN or Aadhaar number isn't SSN- or credit-card-
+shaped, so it isn't caught by those detectors).
+
+This was tested against two scanned ID cards genuinely embedded in the
+assignment's own source document (a PAN card and an Aadhaar card, both
+bilingual English/Devanagari) — real results, not a synthetic demo:
+
+- Correctly OCR'd and redacted: the date of birth, several address
+  fragments, and some English name text.
+- **Not redacted: the Devanagari (Hindi) name, father's name, address,
+  and DOB fields on both cards** — pytesseract is only configured for
+  English OCR here, and spaCy's `en_core_web_lg` has no ability to
+  recognize Hindi text as a person/location regardless. Every Indian ID
+  card in this document is bilingual, so this is a real, significant,
+  disclosed gap, not an edge case — extending to Hindi would need a
+  Devanagari Tesseract language pack (`lang="hin"`) and very likely a
+  different NER model, since spaCy's English model won't recognize
+  entities in a script it wasn't trained on.
+- Partial redaction on some fields (e.g., only the surname of a two-word
+  name got boxed) — an OCR word-segmentation edge case, not a systemic
+  failure; the audit log records exactly which words were and weren't
+  covered.
+- The PAN and Aadhaar numbers themselves were correctly left alone (out
+  of the assignment's 9 required types) — the QR code and photo on both
+  cards were, as scoped, untouched.
+
+See [`deliverables/README.md`](deliverables/README.md) for the actual
+before/after images.
 
 ## Tradeoffs, false positives, and false negatives
 
