@@ -10,6 +10,7 @@ from core.exceptions import DetectorUnavailableError
 from schemas.common import PIIEntity, PIIType, TextSpan
 from utils.fuzzy import adjust_company_confidence
 from utils.ids import new_id
+from utils.text import preceding_word
 
 _LABEL_MAP = {
     "PERSON": PIIType.PERSON,
@@ -65,7 +66,7 @@ class SpacyNERDetector(BaseDetector):
             confidence = _CONFIDENCE[pii_type]
 
             if pii_type == PIIType.COMPANY:
-                confidence = adjust_company_confidence(ent.text, confidence)
+                confidence = adjust_company_confidence(ent.text, confidence, preceding_word(text, ent.start_char))
 
             entities.append(
                 PIIEntity(

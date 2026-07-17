@@ -11,7 +11,7 @@ from core.exceptions import DetectorUnavailableError
 from schemas.common import PIIEntity, PIIType, TextSpan
 from utils.fuzzy import DOB_CONTEXT_KEYWORDS, adjust_company_confidence, fuzzy_contains_keyword
 from utils.ids import new_id
-from utils.text import context_window
+from utils.text import context_window, preceding_word
 
 _ENTITY_MAP: dict[str, PIIType] = {
     "PERSON": PIIType.PERSON,
@@ -90,7 +90,7 @@ class PresidioDetector(BaseDetector):
                 confidence = max(confidence, 0.75)
 
             if pii_type == PIIType.COMPANY:
-                confidence = adjust_company_confidence(raw_value, confidence)
+                confidence = adjust_company_confidence(raw_value, confidence, preceding_word(text, result.start))
 
             if pii_type == PIIType.ADDRESS:
                 # LOCATION alone is usually just a city/country/landmark
