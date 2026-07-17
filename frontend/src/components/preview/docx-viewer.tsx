@@ -45,7 +45,15 @@ export function DocxViewer({
   }, [fileUrl]);
 
   React.useEffect(() => {
-    if (status !== "ready" || !containerRef.current) return;
+    if (status !== "ready" || !containerRef.current || html === null) return;
+    // applyTextHighlights mutates the DOM in place (splits text nodes into
+    // <mark>-wrapped fragments). Re-running it on the already-marked DOM —
+    // which happens on every approve/reject or confidence-threshold change,
+    // since those give `highlights` a new reference — would re-walk text
+    // already inside a <mark> and nest marks inside marks, which is what
+    // showed up as the preview visibly jittering/duplicating during review.
+    // Resetting to the untouched base HTML first keeps each pass idempotent.
+    containerRef.current.innerHTML = html;
     applyTextHighlights(containerRef.current, highlights);
   }, [status, html, highlights]);
 

@@ -136,7 +136,7 @@ export default function EvaluationPage() {
             <h2 className="text-xl font-semibold tracking-tight">Audit log</h2>
             <p className="text-sm text-muted-foreground">Full redaction event trail for a completed job.</p>
           </div>
-          <Select value={selectedJobId ?? undefined} onValueChange={(v) => loadAuditLog(v as string)}>
+          <Select value={selectedJobId ?? ""} onValueChange={(v) => loadAuditLog(v as string)}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder="Choose a completed job" />
             </SelectTrigger>

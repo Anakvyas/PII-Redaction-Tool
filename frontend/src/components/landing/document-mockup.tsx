@@ -60,11 +60,10 @@ export function DocumentMockup() {
                   <motion.span
                     animate={{
                       backgroundColor: redacted ? "#0b0b0b" : `${hue.light}22`,
-                      color: redacted ? "#0b0b0b" : "inherit",
                       borderColor: redacted ? "#0b0b0b" : `${hue.light}55`,
                     }}
                     transition={{ duration: 0.5 }}
-                    className="rounded-[4px] border px-1 py-px font-medium"
+                    className="rounded-[4px] border px-1 py-px font-medium text-foreground"
                     title={PII_TYPE_LABELS[token.pii]}
                   >
                     {redacted ? " ".repeat(Math.max(4, token.text.length)) : token.text}

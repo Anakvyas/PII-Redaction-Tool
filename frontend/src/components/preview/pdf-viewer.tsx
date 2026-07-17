@@ -9,6 +9,16 @@ import type { PreviewHighlight } from "@/components/preview/types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
+// Without these, pdf.js can't resolve embedded-font character maps or
+// non-embedded standard fonts (common in Word/LaTeX-exported prospectuses) —
+// it fails per-page text drawing silently, leaving a blank white canvas even
+// though the document's page count loaded fine.
+const PDF_OPTIONS = {
+  cMapUrl: "/pdfjs/cmaps/",
+  cMapPacked: true,
+  standardFontDataUrl: "/pdfjs/standard_fonts/",
+};
+
 export function PdfViewer({
   fileUrl,
   highlights,
@@ -30,7 +40,14 @@ export function PdfViewer({
     if (!el) return;
     const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width;
-      if (width) setContainerWidth(Math.min(width, 900));
+      if (!width) return;
+      const next = Math.min(width, 900);
+      // Rendering a page can itself toggle a vertical scrollbar (blank
+      // canvases were short; real content is tall), which nudges this
+      // container's width, which re-renders the page, which toggles the
+      // scrollbar again — an infinite ResizeObserver feedback loop. Only
+      // commit when the width actually moved by more than rounding noise.
+      setContainerWidth((prev) => (Math.abs(prev - next) < 1 ? prev : next));
     });
     observer.observe(el);
     return () => observer.disconnect();
@@ -51,6 +68,7 @@ export function PdfViewer({
     <div ref={containerRef} className="w-full space-y-4">
       <Document
         file={fileUrl}
+        options={PDF_OPTIONS}
         onLoadSuccess={(doc) => setNumPages(doc.numPages)}
         loading={
           <div className="flex items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
@@ -73,9 +91,12 @@ export function PdfViewer({
                 width={containerWidth}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
-                onLoadSuccess={(page) =>
-                  setScaleByPage((prev) => ({ ...prev, [pageNumber]: page.width / page.originalWidth }))
-                }
+                onLoadSuccess={(page) => {
+                  const nextScale = page.width / page.originalWidth;
+                  setScaleByPage((prev) =>
+                    prev[pageNumber] === nextScale ? prev : { ...prev, [pageNumber]: nextScale },
+                  );
+                }}
               />
               {scale &&
                 pageHighlights.map((h) => (

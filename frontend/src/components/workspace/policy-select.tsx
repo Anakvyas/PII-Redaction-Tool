@@ -13,7 +13,7 @@ export function PolicySelect({
   onChange: (policyId: string) => void;
 }) {
   return (
-    <Select value={value ?? undefined} onValueChange={(next) => onChange(next as string)}>
+    <Select value={value ?? ""} onValueChange={(next) => onChange(next as string)}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Choose a redaction policy" />
       </SelectTrigger>

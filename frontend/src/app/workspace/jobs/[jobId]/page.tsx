@@ -81,8 +81,13 @@ export default function JobDetailPage() {
   }, [jobId, refresh]);
 
   // Live-updates while the background detection task is running.
+  // Depends on job.status (a stable primitive), not job itself — job gets a
+  // new object reference on every refresh(), which previously reran this
+  // effect on every SSE message, tearing down and reopening the connection
+  // in a loop (visible as the preview repeatedly flashing/reloading).
+  const jobStatus = job?.status;
   React.useEffect(() => {
-    if (!job || !["queued", "detecting"].includes(job.status)) return;
+    if (!jobStatus || !["queued", "detecting"].includes(jobStatus)) return;
 
     const source = new EventSource(api.jobs.streamUrl(jobId));
     source.onmessage = () => {
@@ -92,7 +97,7 @@ export default function JobDetailPage() {
       source.close();
     };
     return () => source.close();
-  }, [job, jobId, refresh]);
+  }, [jobStatus, jobId, refresh]);
 
   // Once completed, load the redacted file + report artifact links.
   React.useEffect(() => {
@@ -149,6 +154,18 @@ export default function JobDetailPage() {
     }
   }
 
+  // Must run on every render (before the loading/not-found early returns
+  // below) — a hook that only runs once `job` exists changes the hook count
+  // between renders and trips React's "Rendered more hooks than during the
+  // previous render" error. Also memoized so a fresh array on an unrelated
+  // re-render (e.g. just hovering a card) doesn't cascade into
+  // DocumentPreview's highlight useMemo and the DOCX viewer's highlight-apply
+  // effect re-running on an already-highlighted DOM — visible as flicker.
+  const visibleDetections = React.useMemo(
+    () => (job ? job.detections.filter((d) => d.confidence >= minConfidence) : []),
+    [job, minConfidence],
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center gap-2 py-32 text-muted-foreground">
@@ -163,7 +180,6 @@ export default function JobDetailPage() {
 
   const reviewable = job.status === "needs_review";
   const canRedact = reviewable && job.detections.length >= 0;
-  const visibleDetections = job.detections.filter((d) => d.confidence >= minConfidence);
   const hiddenCount = job.detections.length - visibleDetections.length;
 
   return (
@@ -212,7 +228,7 @@ export default function JobDetailPage() {
                 <DocumentPreview
                   format={document.format}
                   fileUrl={originalUrl}
-                  detections={job.detections}
+                  detections={visibleDetections}
                   activeHighlightId={activeHighlightId}
                   onHighlightHover={setActiveHighlightId}
                 />

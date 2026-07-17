@@ -22,8 +22,8 @@ class PolicyService:
             return
         record = PolicyModel(
             id=DEFAULT_POLICY_ID,
-            name="Default (mask everything)",
-            strategy_map={t.value: RedactionStrategy.MASK.value for t in PIIType},
+            name="Default (realistic fake values)",
+            strategy_map={t.value: RedactionStrategy.PSEUDONYMIZE.value for t in PIIType},
             confidence_floor=0.75,
         )
         self._db.add(record)
