@@ -32,3 +32,4 @@ yarn-error.log*
 backend/storage/
 *.db
 *.sqlite3
+deliverables/
