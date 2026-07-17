@@ -1,7 +1,10 @@
-"""The detection pipeline: fan out to every registered detector, boost
-confidence where independent detectors corroborate each other, resolve
+"""The detection pipeline: fan out to every registered detector, extend
+NER company spans over trailing legal suffixes they're inconsistent about,
+boost confidence where independent detectors corroborate each other, resolve
 overlapping spans down to a single ranked set, then normalize the result."""
 from __future__ import annotations
+
+import re
 
 from detectors.registry import DetectorRegistry
 from schemas.common import ExtractedDocument, PIIEntity, PIIType, TextSpan
@@ -12,6 +15,25 @@ _CORROBORATION_SIMILARITY = 0.85
 _CORROBORATION_BOOST = 0.05
 _DETERMINISTIC_SOURCES = frozenset({"regex_detector", "date_detector"})
 
+# spaCy/Presidio's ORG span boundary for a trailing legal-entity suffix is
+# inconsistent — the same string ("Vertex Industries Pvt. Ltd.") keeps the
+# full suffix in isolation but drops " Ltd." when a paragraph break follows
+# it, a sentence-boundary tokenization quirk around the "Pvt."-style
+# abbreviation period. Extend the span defensively so the suffix doesn't
+# survive redaction as a dangling fragment of the original company name.
+_COMPANY_SUFFIX = re.compile(
+    r"\A[\s,]*(?:Pvt\.?|Private)?[\s,]*"
+    # Trailing (?![a-zA-Z]) instead of \b: a short abbreviation like "Co" or
+    # "Inc" without its period is a real word-fragment risk (matched
+    # case-insensitively, "Co" also matches the first two letters of
+    # "completed") — \b wouldn't catch this either, since it fails to match
+    # right after a period anyway (both neighbors are non-word characters).
+    r"(?:Ltd\.?|Limited|Inc\.?|LLC|LLP|Corp\.?|Corporation|Co\.?|Company|GmbH|PLC|Sdn\.?\s*Bhd\.?)(?![a-zA-Z])",
+    re.IGNORECASE,
+)
+_COMPANY_SUFFIX_LOOKAHEAD_CHARS = 24
+_COMPANY_SUFFIX_MAX_EXTENSIONS = 2
+
 
 class DetectionPipeline:
     def __init__(self, registry: DetectorRegistry) -> None:
@@ -20,9 +42,42 @@ class DetectionPipeline:
     def run(self, document: ExtractedDocument, pii_types: set[PIIType]) -> list[PIIEntity]:
         text = document.flattened_text()
         raw_entities = self._registry.detect_all(text, pii_types)
-        boosted = self._boost_corroborated(raw_entities)
+        extended = self._extend_company_suffixes(text, raw_entities)
+        boosted = self._boost_corroborated(extended)
         merged = self._merge_overlaps(boosted)
         return [self._normalize(e) for e in merged]
+
+    @staticmethod
+    def _extend_company_suffixes(text: str, entities: list[PIIEntity]) -> list[PIIEntity]:
+        extended: list[PIIEntity] = []
+        for entity in entities:
+            if entity.pii_type != PIIType.COMPANY:
+                extended.append(entity)
+                continue
+
+            end = entity.span.end
+            for _ in range(_COMPANY_SUFFIX_MAX_EXTENSIONS):
+                lookahead = text[end : end + _COMPANY_SUFFIX_LOOKAHEAD_CHARS]
+                match = _COMPANY_SUFFIX.match(lookahead)
+                if not match:
+                    break
+                end += match.end()
+
+            if end == entity.span.end:
+                extended.append(entity)
+                continue
+
+            extended.append(
+                entity.model_copy(
+                    update={
+                        "raw_value": text[entity.span.start : end],
+                        "span": TextSpan(
+                            start=entity.span.start, end=end, page=entity.span.page, bbox=entity.span.bbox
+                        ),
+                    }
+                )
+            )
+        return extended
 
     @staticmethod
     def _boost_corroborated(entities: list[PIIEntity]) -> list[PIIEntity]:

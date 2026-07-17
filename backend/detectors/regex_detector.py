@@ -30,10 +30,20 @@ _STREET_SUFFIX = (
     r"Way|Place|Pl|Square|Sq|Terrace|Ter|Circle|Cir|Highway|Hwy"
 )
 _ADDRESS = re.compile(
-    rf"\b\d{{1,6}}\s+[A-Z][A-Za-z]*(?:\s[A-Z][A-Za-z]*){{0,3}}\s(?:{_STREET_SUFFIX})\.?"
+    # Several suffix abbreviations (Ter, Dr, St, Rd, Ct, Pl, Sq, Cir...) are
+    # short enough to also be the first three-ish letters of an unrelated
+    # word ("Term", "Drought", ...) — (?![a-zA-Z]) after the optional period
+    # rejects that, the same class of fix as _COMPANY_SUFFIX in
+    # detection_service.py. Regression: "2023 Short Term Borrowings" was
+    # matching "2023 Short Ter" as a street address ("Ter" from "Term").
+    rf"\b\d{{1,6}}\s+[A-Z][A-Za-z]*(?:\s[A-Z][A-Za-z]*){{0,3}}\s(?:{_STREET_SUFFIX})\.?(?![a-zA-Z])"
     rf"(?:,\s*[A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)*)?"
     rf"(?:,?\s*[A-Z]{{2}})?"
-    rf"(?:\s+\d{{5}}(?:-\d{{4}})?)?"
+    # Postal code: US ZIP is 5 digits (+4 optional); many other countries
+    # (India's PIN, for one) use 6 — match 4-6 so the tail isn't chopped off
+    # mid-digit-run, which would otherwise fail the word-boundary safety
+    # check downstream and silently drop the whole address.
+    rf"(?:\s+\d{{4,6}}(?:-\d{{4}})?)?"
 )
 
 _CONFIDENCE = {

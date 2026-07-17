@@ -24,6 +24,57 @@ def _entity(
     )
 
 
+class TestExtendCompanySuffixes:
+    """Regression tests: spaCy/Presidio are inconsistent about whether a
+    trailing legal-entity suffix ("Ltd.", "Inc.", "Pvt. Ltd.") belongs to the
+    ORG span — the same string keeps its full suffix in isolation but drops
+    it when a paragraph break immediately follows. _extend_company_suffixes
+    is the safety net that patches the span back up before it ever reaches
+    redaction, so the suffix doesn't survive as a dangling fragment."""
+
+    def test_extends_span_over_trailing_ltd(self):
+        # The real-world failure mode: NER's ORG span stopped right at
+        # "Pvt." — the text right after actually continues " Ltd.".
+        text = "Employer: Vertex Industries Pvt. Ltd.\n\nAddress: 1 Main St"
+        entity = _entity(
+            pii_type=PIIType.COMPANY, start=10, end=32, raw_value="Vertex Industries Pvt.",
+            source_detector="presidio_detector",
+        )
+        extended = DetectionPipeline._extend_company_suffixes(text, [entity])
+        assert extended[0].raw_value == "Vertex Industries Pvt. Ltd."
+        assert text[extended[0].span.start : extended[0].span.end] == extended[0].raw_value
+
+    def test_extends_over_bare_inc(self):
+        text = "Contractor: Initech Inc. completed the work."
+        entity = _entity(
+            pii_type=PIIType.COMPANY, start=12, end=19, raw_value="Initech", source_detector="spacy_ner_detector"
+        )
+        extended = DetectionPipeline._extend_company_suffixes(text, [entity])
+        assert extended[0].raw_value == "Initech Inc."
+
+    def test_noop_when_no_suffix_follows(self):
+        text = "Contractor: Initech built the widget."
+        entity = _entity(
+            pii_type=PIIType.COMPANY, start=12, end=19, raw_value="Initech", source_detector="spacy_ner_detector"
+        )
+        extended = DetectionPipeline._extend_company_suffixes(text, [entity])
+        assert extended[0] is entity
+
+    def test_ignores_non_company_entities(self):
+        text = "Ltd. Warfield lives here."
+        entity = _entity(pii_type=PIIType.PERSON, start=5, end=13, raw_value="Warfield")
+        extended = DetectionPipeline._extend_company_suffixes(text, [entity])
+        assert extended[0] is entity
+
+    def test_extends_at_most_twice(self):
+        """Guard against runaway extension if the suffix pattern somehow
+        kept matching — bounded to two extra tokens (covers "Pvt. Ltd.")."""
+        text = "Foo Ltd. Inc. Corp. Co. bar"
+        entity = _entity(pii_type=PIIType.COMPANY, start=0, end=3, raw_value="Foo")
+        extended = DetectionPipeline._extend_company_suffixes(text, [entity])
+        assert extended[0].raw_value in ("Foo Ltd. Inc.", "Foo Ltd. Inc")
+
+
 class TestMergeOverlaps:
     def test_higher_confidence_wins_overlap(self):
         low = _entity(start=0, end=10, confidence=0.6, source_detector="a")

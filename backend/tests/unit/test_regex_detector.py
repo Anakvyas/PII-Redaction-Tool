@@ -92,6 +92,37 @@ class TestAddress:
         assert values
         assert values[0].startswith("742 Evergreen Terrace")
 
+    def test_detects_six_digit_indian_pin_code(self, regex_detector):
+        """Regression test: a 6-digit PIN code used to get truncated to 5
+        digits by the ZIP group, which then failed the downstream
+        word-boundary safety check and silently dropped the whole address."""
+        text = "Address: 14 Residency Road, Bengaluru, KA 560025"
+        entities = regex_detector.detect(text, {PIIType.ADDRESS})
+        values = _values(entities, PIIType.ADDRESS)
+        assert values == ["14 Residency Road, Bengaluru, KA 560025"]
+
+    def test_span_includes_full_postal_code_not_truncated(self, regex_detector):
+        text = "Ship to 100 Main St, Springfield, IL 987654 today."
+        entities = regex_detector.detect(text, {PIIType.ADDRESS})
+        values = _values(entities, PIIType.ADDRESS)
+        assert values
+        assert values[0].endswith("987654")
+
+    def test_does_not_match_short_suffix_abbreviation_inside_an_unrelated_word(self, regex_detector):
+        """Regression test from a real document: "2023 Short Term
+        Borrowings" (a financial table heading) was matching "2023 Short
+        Ter" as a street address — "Ter" (Terrace) is a valid suffix
+        abbreviation and matched as a prefix of "Term" with no word-boundary
+        check stopping it."""
+        text = "2023 Short Term Borrowings increased year over year."
+        entities = regex_detector.detect(text, {PIIType.ADDRESS})
+        assert entities == []
+
+    def test_does_not_match_dr_inside_an_unrelated_word(self, regex_detector):
+        text = "12 New Drought conditions were reported across the region."
+        entities = regex_detector.detect(text, {PIIType.ADDRESS})
+        assert entities == []
+
 
 class TestSpanIntegrity:
     def test_span_matches_raw_value_in_source_text(self, regex_detector):
