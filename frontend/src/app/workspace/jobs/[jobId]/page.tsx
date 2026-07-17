@@ -45,6 +45,11 @@ export default function JobDetailPage() {
   const [redacting, setRedacting] = React.useState(false);
   const [activeHighlightId, setActiveHighlightId] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState("original");
+  // Default matches the backend's own auto-approval floor (see
+  // DEFAULT_CONFIDENCE_FLOOR) — hides the low-confidence noise (e.g. "Offer",
+  // "SEBI" tagged as a company at ~30%) by default, but the user can lower
+  // it to see everything, or raise it to see only the most confident hits.
+  const [minConfidence, setMinConfidence] = React.useState(0.75);
 
   const refresh = React.useCallback(async () => {
     const detail = await api.jobs.get(jobId);

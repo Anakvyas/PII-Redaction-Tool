@@ -6,11 +6,10 @@ import { motion } from "framer-motion";
 import { Loader2, ScanSearch } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiRequestError } from "@/lib/api";
-import { ALL_PII_TYPES, type DocumentOut, type JobOut, type PIIType, type PolicyOut } from "@/lib/types";
+import { ALL_PII_TYPES, type DocumentOut, type JobOut, type PIIType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dropzone } from "@/components/workspace/dropzone";
-import { PolicySelect } from "@/components/workspace/policy-select";
 import { PiiTypePicker } from "@/components/workspace/pii-type-picker";
 import { JobList } from "@/components/jobs/job-list";
 import { Reveal } from "@/components/landing/reveal";
@@ -19,7 +18,6 @@ export default function WorkspacePage() {
   const router = useRouter();
 
   const [file, setFile] = React.useState<File | null>(null);
-  const [policies, setPolicies] = React.useState<PolicyOut[]>([]);
   const [policyId, setPolicyId] = React.useState<string | null>(null);
   const [piiTypes, setPiiTypes] = React.useState<PIIType[]>(ALL_PII_TYPES);
   const [submitting, setSubmitting] = React.useState(false);
@@ -50,7 +48,6 @@ export default function WorkspacePage() {
     api.policies
       .list()
       .then((list) => {
-        setPolicies(list);
         setPolicyId((current) => current ?? list[0]?.id ?? null);
       })
       .catch(() => toast.error("Could not load redaction policies."));
@@ -90,13 +87,6 @@ export default function WorkspacePage() {
           <div>
             <label className="mb-2 block text-sm font-medium">Document</label>
             <Dropzone file={file} onFileSelected={setFile} onFileCleared={() => setFile(null)} disabled={submitting} />
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium">Redaction policy</label>
-              <PolicySelect policies={policies} value={policyId} onChange={setPolicyId} />
-            </div>
           </div>
 
           <div>
