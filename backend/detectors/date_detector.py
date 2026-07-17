@@ -9,6 +9,7 @@ from datetime import datetime
 
 from detectors.base import BaseDetector
 from schemas.common import PIIEntity, PIIType, TextSpan
+from utils.fuzzy import DOB_CONTEXT_KEYWORDS, fuzzy_contains_keyword
 from utils.ids import new_id
 from utils.text import context_window
 
@@ -23,9 +24,6 @@ _PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
     (re.compile(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b"), "ymd_dash"),
     (re.compile(rf"\b({_MONTHS})\s+(\d{{1,2}}),?\s+(\d{{4}})\b", re.IGNORECASE), "month_name"),
 )
-
-_CONTEXT_KEYWORDS = ("dob", "date of birth", "born", "birth date", "birthdate", "b-day", "birthday")
-
 
 def _try_parse(match: re.Match, kind: str) -> datetime | None:
     try:
@@ -72,7 +70,7 @@ class DateDetector(BaseDetector):
                     continue  # not a plausible birth year — likely an expiry/future date
 
                 window = context_window(text, m.start(), m.end())
-                has_context = any(keyword in window for keyword in _CONTEXT_KEYWORDS)
+                has_context = fuzzy_contains_keyword(window, DOB_CONTEXT_KEYWORDS)
                 confidence = 0.92 if has_context else 0.4
 
                 seen_spans.add((m.start(), m.end()))

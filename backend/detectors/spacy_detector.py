@@ -1,12 +1,14 @@
 """Statistical NER for the two PII types that don't have a fixed shape:
-Person and Company. Wraps spaCy directly rather than Presidio to keep the
-dependency footprint small; the interface is what matters — swapping in
-Presidio's AnalyzerEngine later means changing this one adapter."""
+Person and Company. Kept as an independent adapter alongside PresidioDetector
+(same underlying model family, separate pipeline) so the two can corroborate
+each other in DetectionPipeline — two independent detectors agreeing on a
+span is a stronger signal than either alone."""
 from __future__ import annotations
 
 from detectors.base import BaseDetector
 from core.exceptions import DetectorUnavailableError
 from schemas.common import PIIEntity, PIIType, TextSpan
+from utils.fuzzy import adjust_company_confidence
 from utils.ids import new_id
 
 _LABEL_MAP = {
@@ -20,7 +22,7 @@ _CONFIDENCE = {
 
 
 class SpacyNERDetector(BaseDetector):
-    def __init__(self, model_name: str = "en_core_web_sm") -> None:
+    def __init__(self, model_name: str = "en_core_web_lg") -> None:
         self._model_name = model_name
         self._nlp = None
 
@@ -60,13 +62,18 @@ class SpacyNERDetector(BaseDetector):
             if ent.label_ not in wanted_labels:
                 continue
             pii_type = _LABEL_MAP[ent.label_]
+            confidence = _CONFIDENCE[pii_type]
+
+            if pii_type == PIIType.COMPANY:
+                confidence = adjust_company_confidence(ent.text, confidence)
+
             entities.append(
                 PIIEntity(
                     id=new_id("det"),
                     pii_type=pii_type,
                     span=TextSpan(start=ent.start_char, end=ent.end_char),
                     raw_value=ent.text,
-                    confidence=_CONFIDENCE[pii_type],
+                    confidence=confidence,
                     source_detector=self.name,
                 )
             )
