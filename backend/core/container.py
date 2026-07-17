@@ -7,6 +7,7 @@ from functools import lru_cache
 
 from config.settings import get_settings
 from detectors.date_detector import DateDetector
+from detectors.labeled_field_detector import LabeledFieldDetector
 from detectors.presidio_detector import PresidioDetector
 from detectors.regex_detector import RegexDetector
 from detectors.registry import DetectorRegistry
@@ -24,6 +25,7 @@ def get_detector_registry() -> DetectorRegistry:
             DateDetector(),
             SpacyNERDetector(model_name=settings.SPACY_MODEL),
             PresidioDetector(model_name=settings.SPACY_MODEL),
+            LabeledFieldDetector(),
         ]
     )
 

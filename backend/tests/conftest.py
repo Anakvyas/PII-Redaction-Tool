@@ -6,6 +6,7 @@ from __future__ import annotations
 import pytest
 
 from detectors.date_detector import DateDetector
+from detectors.labeled_field_detector import LabeledFieldDetector
 from detectors.presidio_detector import PresidioDetector
 from detectors.regex_detector import RegexDetector
 from detectors.registry import DetectorRegistry
@@ -34,8 +35,17 @@ def presidio_detector() -> PresidioDetector:
 
 
 @pytest.fixture(scope="session")
-def detector_registry(regex_detector, date_detector, spacy_detector, presidio_detector) -> DetectorRegistry:
-    return DetectorRegistry([regex_detector, date_detector, spacy_detector, presidio_detector])
+def labeled_field_detector() -> LabeledFieldDetector:
+    return LabeledFieldDetector()
+
+
+@pytest.fixture(scope="session")
+def detector_registry(
+    regex_detector, date_detector, spacy_detector, presidio_detector, labeled_field_detector
+) -> DetectorRegistry:
+    return DetectorRegistry(
+        [regex_detector, date_detector, spacy_detector, presidio_detector, labeled_field_detector]
+    )
 
 
 @pytest.fixture(scope="session")
