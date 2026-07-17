@@ -1,0 +1,2030 @@
+{
+  "classification_report": {
+    "address": {
+      "entity_accuracy": 0.07017543859649122,
+      "f1": 0.13114754098360654,
+      "false_negatives": 10,
+      "false_positives": 43,
+      "precision": 0.0851063829787234,
+      "recall": 0.2857142857142857,
+      "support": 14,
+      "true_positives": 4
+    },
+    "company": {
+      "entity_accuracy": 0.06557377049180328,
+      "f1": 0.12307692307692307,
+      "false_negatives": 0,
+      "false_positives": 57,
+      "precision": 0.06557377049180328,
+      "recall": 1.0,
+      "support": 4,
+      "true_positives": 4
+    },
+    "email": {
+      "entity_accuracy": 1.0,
+      "f1": 1.0,
+      "false_negatives": 0,
+      "false_positives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 5,
+      "true_positives": 5
+    },
+    "person": {
+      "entity_accuracy": 0.3684210526315789,
+      "f1": 0.5384615384615384,
+      "false_negatives": 6,
+      "false_positives": 6,
+      "precision": 0.5384615384615384,
+      "recall": 0.5384615384615384,
+      "support": 13,
+      "true_positives": 7
+    },
+    "phone": {
+      "entity_accuracy": 0.75,
+      "f1": 0.8571428571428571,
+      "false_negatives": 0,
+      "false_positives": 1,
+      "precision": 0.75,
+      "recall": 1.0,
+      "support": 3,
+      "true_positives": 3
+    }
+  },
+  "confusion_matrix": {
+    "__none__": {
+      "__none__": 0,
+      "address": 43,
+      "company": 47,
+      "email": 0,
+      "person": 4,
+      "phone": 1
+    },
+    "address": {
+      "__none__": 0,
+      "address": 4,
+      "company": 8,
+      "email": 0,
+      "person": 2,
+      "phone": 0
+    },
+    "company": {
+      "__none__": 0,
+      "address": 0,
+      "company": 4,
+      "email": 0,
+      "person": 0,
+      "phone": 0
+    },
+    "email": {
+      "__none__": 0,
+      "address": 0,
+      "company": 0,
+      "email": 5,
+      "person": 0,
+      "phone": 0
+    },
+    "person": {
+      "__none__": 4,
+      "address": 0,
+      "company": 2,
+      "email": 0,
+      "person": 7,
+      "phone": 0
+    },
+    "phone": {
+      "__none__": 0,
+      "address": 0,
+      "company": 0,
+      "email": 0,
+      "person": 0,
+      "phone": 3
+    }
+  },
+  "formulas": {
+    "entity_accuracy": "TP / (TP + FP + FN)",
+    "f1": "2 * Precision * Recall / (Precision + Recall)",
+    "false_negative": "Ground-truth entity has no overlapping prediction with the same type.",
+    "false_positive": "Predicted entity has no overlapping ground truth, or overlaps a different type.",
+    "precision": "TP / (TP + FP)",
+    "recall": "TP / (TP + FN)",
+    "true_positive": "Predicted entity overlaps an unmatched ground-truth entity with the same type."
+  },
+  "matches": [
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 79,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 54,
+        "text": "KSH International Limited"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 79,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 46,
+        "text": "Company KSH International Limited"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 175,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 81,
+        "text": "11/3, 11/4 and 11/5, Village Birdewadi Chakan, Taluka-Khed\n\nPune \u2013 410 501\n\nMaharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 126,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 110,
+        "text": "Birdewadi Chakan"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 375,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 350,
+        "text": "KSH International Limited"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 375,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 342,
+        "text": "Company KSH International Limited"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 472,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 377,
+        "text": "201, Tower-2, Montreal Business Centre Off Pallod Farms, Baner\n\nPune 411 045 Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 432,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 391,
+        "text": "Montreal Business Centre Off Pallod Farms"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 919,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 802,
+        "text": "PCNTDA Green Building Block A 1st and 2nd floor Near Akurdi Railway Station Akurdi, Pune \u2013 411 044 Maharashtra, India"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 890,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 886,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1339,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1178,
+        "text": "S. no. 245/ 104, Pushpakamal, Deccan Gymkhana Society, lane no. 3 Prabhat Road, opposite PYC basketball court, Deccan Gymkhana, Pune \u2013 411 004 Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1193,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1190,
+        "text": "104"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1360,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1341,
+        "text": "Rajesh Kushal Hegde"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1360,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1341,
+        "text": "Rajesh Kushal Hegde"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1494,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1391,
+        "text": "12 Buena Monte, NCL co-operative housing society, Panchvati, Pashan, Pune \u2013 411 008, Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1405,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1394,
+        "text": "Buena Monte"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1514,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1496,
+        "text": "Rohit Kushal Hegde"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1521,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1496,
+        "text": "Rohit Kushal Hegde\n\nJoint"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1692,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1551,
+        "text": "Pushpakamal Apartment, Flat \u2013 1, S. no. 245/ 104, Prabhat Road Lane no. 3, Shivaji Nagar, Deccan Gymkhana, Pune \u2013 411 004, Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1599,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1596,
+        "text": "104"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1713,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1694,
+        "text": "Rakhi Girija Shetty"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1713,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1694,
+        "text": "Rakhi Girija Shetty"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1920,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1746,
+        "text": "S. no. 245/ 104, Pushpakamal, Deccan Gymkhana Society, lane no.\n\n3 Prabhat Road, opposite PYC basketball court, Erandawane, Deccan Gymkhana, Pune \u2013 411 004 Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1761,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1758,
+        "text": "104"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1944,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1922,
+        "text": "Dinesh Hirachand Munot"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1944,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1922,
+        "text": "Dinesh Hirachand Munot"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2098,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1978,
+        "text": "Pratik Bunglow, Senapati Bapat Road, behind Sahara Hotel, Shivajinagar, Model Colony, Pune \u2013 411 016, Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1992,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1978,
+        "text": "Pratik Bunglow"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2118,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2100,
+        "text": "Ajay Shriram Patil"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2118,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2100,
+        "text": "Ajay Shriram Patil"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2254,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2152,
+        "text": "602, Gopalkrupa Apartment, Bhonde colony, Prabhat Road, Erandawane, Pune \u2013 411 004, Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2177,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2157,
+        "text": "Gopalkrupa Apartment"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2272,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2256,
+        "text": "Ram Kumar Tiwari"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2272,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2256,
+        "text": "Ram Kumar Tiwari"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2397,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2306,
+        "text": "A-259, JK Road, Minal Residency, Huzur, Govindpura, Bhopal \u2013 462 023, Madhya Pradesh, India"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2356,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2346,
+        "text": "Govindpura"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2517,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2443,
+        "text": "A29, Abhimanshree Society, Pashan Road, Pune \u2013 411 008, Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2468,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 2448,
+        "text": "Abhimanshree Society"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2706,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2689,
+        "text": "Sarthak Malvadkar"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2706,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2689,
+        "text": "Sarthak Malvadkar"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2901,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2800,
+        "text": "Gat No. 11/3, 11/4, 11/5, Village Birdewadi\n\nTaluka Khed, District Pune \u2013 410 501\n\nMaharashtra, India"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2843,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2826,
+        "text": "Village Birdewadi"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2930,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 2914,
+        "text": "+ 91 20 45053237"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2930,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 2914,
+        "text": "+ 91 20 45053237"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2978,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 2940,
+        "text": "Sarthak.malvadkar@kshinterantional.com"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2978,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 2940,
+        "text": "Sarthak.malvadkar@kshinterantional.com"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5262,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5230,
+        "text": "Nuvama Wealth Management Limited"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5262,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5230,
+        "text": "Nuvama Wealth Management Limited"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5387,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5264,
+        "text": "801-804, Wing A, Building No. 3 Inspire BKC G Block, Bandra Kurla Complex\n\nBandra East, Mumbai \u2013 400 051 Maharashtra, India"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5292,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5273,
+        "text": "Wing A, Building No"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5415,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 5400,
+        "text": "+91 22 40094400"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5415,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 5400,
+        "text": "+91 22 40094400"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5441,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5423,
+        "text": "ksh.ipo@nuvama.com"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5441,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5423,
+        "text": "ksh.ipo@nuvama.com"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5523,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5494,
+        "text": "customerservice.mb@nuvama.com"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5523,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5494,
+        "text": "customerservice.mb@nuvama.com"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5568,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 5554,
+        "text": "Soumavo Sarkar"
+      },
+      "outcome": "type_mismatch",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5574,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5541,
+        "text": "Lokesh Shah/ Soumavo Sarkar\n\nSEBI"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5633,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5609,
+        "text": "ICICI Securities Limited"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5653,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5593,
+        "text": "INM000013004\n\n\n\nICICI Securities Limited ICICI Venture House"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5724,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5634,
+        "text": "ICICI Venture House Appasaheb Marathe Marg Prabhadevi, Mumbai \u2013 400 025 Maharashtra, India"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5695,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5689,
+        "text": "Mumbai"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5753,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 5737,
+        "text": "+91 22 6807 7100"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5753,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 5737,
+        "text": "+91 22 6807 7100"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5784,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5761,
+        "text": "ksh@icicisecurities.com"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5784,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5761,
+        "text": "ksh@icicisecurities.com"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5877,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5845,
+        "text": "customercare@icicisecurities.com"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5877,
+        "entity_id": null,
+        "pii_type": "email",
+        "start": 5845,
+        "text": "customercare@icicisecurities.com"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5909,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 5895,
+        "text": "Kishan Rastogi"
+      },
+      "outcome": "true_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5909,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 5895,
+        "text": "Kishan Rastogi"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 139,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 128,
+        "text": "Taluka-Khed"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 175,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 170,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 465,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 454,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 472,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 467,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 689,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 663,
+        "text": "the Registrar of Companies"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 710,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 691,
+        "text": "Maharashtra at Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 779,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 757,
+        "text": "Registrar of Companies"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 792,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 781,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 912,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 901,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 919,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 914,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1028,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1006,
+        "text": "our Board of Directors"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1206,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1195,
+        "text": "Pushpakamal"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1231,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1208,
+        "text": "Deccan Gymkhana Society"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1256,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1242,
+        "text": "3 Prabhat Road"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1270,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1267,
+        "text": "PYC"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1304,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1289,
+        "text": "Deccan Gymkhana"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1310,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1306,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1339,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1334,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1413,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1407,
+        "text": "NCL co"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1450,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1441,
+        "text": "Panchvati"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1458,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1452,
+        "text": "Pashan"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1464,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1460,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1487,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1476,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1494,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1489,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1639,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1626,
+        "text": "Shivaji Nagar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1656,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1641,
+        "text": "Deccan Gymkhana"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1662,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1658,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1685,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1674,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1692,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1687,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1774,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1763,
+        "text": "Pushpakamal"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1799,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1776,
+        "text": "Deccan Gymkhana Society"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1825,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1811,
+        "text": "3 Prabhat Road"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1839,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1836,
+        "text": "PYC"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1868,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1858,
+        "text": "Erandawane"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1885,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1870,
+        "text": "Deccan Gymkhana"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1891,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1887,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 1920,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 1915,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2013,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 1994,
+        "text": "Senapati Bapat Road"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2048,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2036,
+        "text": "Shivajinagar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2062,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2050,
+        "text": "Model Colony"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2068,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2064,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2091,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2080,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2098,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2093,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2185,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2179,
+        "text": "Bhonde"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2218,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2208,
+        "text": "Erandawane"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2224,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2220,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2247,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2236,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2254,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2249,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2364,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2358,
+        "text": "Bhopal"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2390,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2376,
+        "text": "Madhya Pradesh"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2397,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2392,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2441,
+        "entity_id": null,
+        "pii_type": "phone",
+        "start": 2433,
+        "text": "05293084"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2487,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2483,
+        "text": "Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2510,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2499,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2517,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2512,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2587,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 2565,
+        "text": "our Board of Directors"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2721,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 2714,
+        "text": "Company"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2856,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2845,
+        "text": "Taluka Khed"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2871,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2858,
+        "text": "District Pune"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 2901,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 2896,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3032,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3025,
+        "text": "Company"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3093,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3067,
+        "text": "Book Running Lead Managers"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3106,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3097,
+        "text": "Registrar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3264,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3255,
+        "text": "Allotment"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3302,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3280,
+        "text": "Allotted Equity Shares"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3486,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3470,
+        "text": "Anchor Investors"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3521,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3512,
+        "text": "Registrar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3534,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3529,
+        "text": "Offer"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3706,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3694,
+        "text": "First Bidder"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3747,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3741,
+        "text": "Bidder"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3755,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3750,
+        "text": "DP ID"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3766,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3757,
+        "text": "Client ID"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3774,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3768,
+        "text": "UPI ID"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3779,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3776,
+        "text": "PAN"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3849,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3837,
+        "text": "ASBA Account"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3928,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3925,
+        "text": "UPI"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 3940,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 3937,
+        "text": "UPI"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4291,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4260,
+        "text": "the Designated Intermediary(ies"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4497,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4488,
+        "text": "Registrar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4525,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4516,
+        "text": "Registrar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4647,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4643,
+        "text": "ASBA"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4710,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4690,
+        "text": "the Anchor Investors"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4744,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4735,
+        "text": "Registrar"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4757,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4752,
+        "text": "Offer"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4823,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4811,
+        "text": "First Bidder"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4891,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4882,
+        "text": "Client ID"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 4896,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 4893,
+        "text": "PAN"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5077,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5041,
+        "text": "the Anchor Investor Application Form"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5158,
+        "entity_id": null,
+        "pii_type": "company",
+        "start": 5122,
+        "text": "the Anchor Investor Application Form"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5350,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5339,
+        "text": "Bandra East"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5358,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5352,
+        "text": "Mumbai"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5380,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5369,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5387,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5382,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5717,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5706,
+        "text": "Maharashtra"
+      }
+    },
+    {
+      "ground_truth": null,
+      "outcome": "false_positive",
+      "prediction": {
+        "document_id": "general_information_section",
+        "end": 5724,
+        "entity_id": null,
+        "pii_type": "address",
+        "start": 5719,
+        "text": "India"
+      }
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 1133,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 1112,
+        "text": "Kushal Subbayya Hegde"
+      },
+      "outcome": "false_negative",
+      "prediction": null
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 2409,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 2399,
+        "text": "Indu Jacob"
+      },
+      "outcome": "false_negative",
+      "prediction": null
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5552,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 5541,
+        "text": "Lokesh Shah"
+      },
+      "outcome": "false_negative",
+      "prediction": null
+    },
+    {
+      "ground_truth": {
+        "document_id": "general_information_section",
+        "end": 5923,
+        "entity_id": null,
+        "pii_type": "person",
+        "start": 5910,
+        "text": "Abhijit Diwan"
+      },
+      "outcome": "false_negative",
+      "prediction": null
+    }
+  ],
+  "overall": {
+    "entity_accuracy": 0.15753424657534246,
+    "f1": 0.27218934911242604,
+    "false_negatives": 16,
+    "false_positives": 107,
+    "precision": 0.17692307692307693,
+    "recall": 0.5897435897435898,
+    "support": 39,
+    "true_positives": 23
+  },
+  "per_type": {
+    "address": {
+      "entity_accuracy": 0.07017543859649122,
+      "f1": 0.13114754098360654,
+      "false_negatives": 10,
+      "false_positives": 43,
+      "precision": 0.0851063829787234,
+      "recall": 0.2857142857142857,
+      "support": 14,
+      "true_positives": 4
+    },
+    "company": {
+      "entity_accuracy": 0.06557377049180328,
+      "f1": 0.12307692307692307,
+      "false_negatives": 0,
+      "false_positives": 57,
+      "precision": 0.06557377049180328,
+      "recall": 1.0,
+      "support": 4,
+      "true_positives": 4
+    },
+    "email": {
+      "entity_accuracy": 1.0,
+      "f1": 1.0,
+      "false_negatives": 0,
+      "false_positives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 5,
+      "true_positives": 5
+    },
+    "person": {
+      "entity_accuracy": 0.3684210526315789,
+      "f1": 0.5384615384615384,
+      "false_negatives": 6,
+      "false_positives": 6,
+      "precision": 0.5384615384615384,
+      "recall": 0.5384615384615384,
+      "support": 13,
+      "true_positives": 7
+    },
+    "phone": {
+      "entity_accuracy": 0.75,
+      "f1": 0.8571428571428571,
+      "false_negatives": 0,
+      "false_positives": 1,
+      "precision": 0.75,
+      "recall": 1.0,
+      "support": 3,
+      "true_positives": 3
+    }
+  }
+}
