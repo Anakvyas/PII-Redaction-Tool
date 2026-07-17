@@ -14,3 +14,5 @@ python-multipart>=0.0.9
 boto3>=1.34,<2.0
 python-dotenv>=1.0,<2.0
 Faker>=25.0,<26.0
+Pillow>=10.1,<13.0  # 10.1+ for ImageFont.load_default(size=...), used by the image-PII tests
+pytesseract>=0.3.10,<0.4  # wraps the tesseract-ocr system binary — see Dockerfile

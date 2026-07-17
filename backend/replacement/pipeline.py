@@ -41,7 +41,7 @@ class ReplacementPipeline:
         audit_log_path = str(artifact_dir / f"{artifact_stem}_audit_log.json")
 
         if document_format == DocumentFormat.DOCX:
-            redaction = redact_docx(source_path, output_path, approved, strategy_map)
+            redaction = redact_docx(source_path, output_path, approved, strategy_map, confidence_floor)
         elif document_format == DocumentFormat.PDF:
             redaction = redact_pdf(source_path, output_path, approved, strategy_map)
         else:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
 docx = pytest.importorskip("docx")
@@ -114,3 +116,52 @@ def test_docx_redactor_does_not_replace_partial_words(tmp_path) -> None:
     assert result.counts_by_type == {}
     assert "Annual" in flattened
     assert "[REDACTED-PERSON]" not in flattened
+
+
+def test_docx_redactor_redacts_pii_in_an_embedded_image(tmp_path) -> None:
+    """End-to-end: a scanned ID card (or any PII-bearing picture) pasted
+    into a DOCX gets OCR'd, the same detection pipeline everything else
+    uses finds the PII in it, and the matching regions are blacked out in
+    the image itself — not just PII in the document's own text runs."""
+    if shutil.which("tesseract") is None:
+        pytest.skip("tesseract binary not installed")
+    pytest.importorskip("PIL")
+    pytest.importorskip("pytesseract")
+    from PIL import Image, ImageDraw, ImageFont
+
+    from docx.parts.image import ImagePart
+
+    from services.image_pii_service import ocr_image
+
+    source = tmp_path / "source.docx"
+    output = tmp_path / "output.docx"
+
+    font = ImageFont.load_default(size=28)
+    image = Image.new("RGB", (800, 200), color="white")
+    draw = ImageDraw.Draw(image)
+    draw.text((20, 20), "Name: Rashi Patil", fill="black", font=font)
+    draw.text((20, 80), "Email: rashi.patil@gmail.com", fill="black", font=font)
+    image_path = tmp_path / "id_card.png"
+    image.save(image_path)
+
+    document = docx.Document()
+    document.add_paragraph("Application attached below.")
+    document.add_picture(str(image_path))
+    document.save(source)
+
+    result = redact_docx(
+        str(source),
+        str(output),
+        entities=[],  # nothing in the document's own text — only the image has PII
+        strategy_map={PIIType.PERSON: RedactionStrategy.MASK, PIIType.EMAIL: RedactionStrategy.MASK},
+    )
+
+    assert result.counts_by_type.get(PIIType.EMAIL, 0) >= 1
+    assert any(entry.image_filename is not None for entry in result.audit_entries)
+
+    redacted_doc = docx.Document(output)
+    image_parts = [p for p in redacted_doc.part.related_parts.values() if isinstance(p, ImagePart)]
+    assert len(image_parts) == 1
+
+    redacted_text, _words = ocr_image(image_parts[0].blob)
+    assert "rashi.patil@gmail.com" not in redacted_text

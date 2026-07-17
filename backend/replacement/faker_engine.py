@@ -33,6 +33,10 @@ class AuditEntry:
     bbox: tuple[float, float, float, float] | None
     source_detector: str
     confidence: float
+    # Set only for PII found via OCR inside an embedded image (see
+    # services/image_pii_service.py) — span_start/span_end then index into
+    # that image's own OCR'd text, not the document's text.
+    image_filename: str | None = None
 
 
 class FakerReplacementEngine:
@@ -110,6 +114,7 @@ class FakerReplacementEngine:
                         },
                         "source_detector": entry.source_detector,
                         "confidence": entry.confidence,
+                        "image_filename": entry.image_filename,
                     }
                     for entry in audit_entries
                 ],
@@ -194,7 +199,7 @@ class FakerReplacementEngine:
         return f"{self._faker.first_name()} {self._faker.last_name()}"
 
 
-def build_audit_entry(entity: PIIEntity, replacement: str) -> AuditEntry:
+def build_audit_entry(entity: PIIEntity, replacement: str, image_filename: str | None = None) -> AuditEntry:
     return AuditEntry(
         entity_id=entity.id,
         pii_type=entity.effective_type(),
@@ -206,6 +211,7 @@ def build_audit_entry(entity: PIIEntity, replacement: str) -> AuditEntry:
         bbox=entity.span.bbox,
         source_detector=entity.source_detector,
         confidence=entity.confidence,
+        image_filename=image_filename,
     )
 
 
