@@ -163,6 +163,8 @@ export default function JobDetailPage() {
 
   const reviewable = job.status === "needs_review";
   const canRedact = reviewable && job.detections.length >= 0;
+  const visibleDetections = job.detections.filter((d) => d.confidence >= minConfidence);
+  const hiddenCount = job.detections.length - visibleDetections.length;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -226,11 +228,35 @@ export default function JobDetailPage() {
               <Card className="gap-3 rounded-2xl border-border/70 p-4">
                 <div className="flex items-center justify-between">
                   <h2 className="font-semibold">Review detections</h2>
-                  <span className="text-xs text-muted-foreground">{job.detections.length} found</span>
+                  <span className="text-xs text-muted-foreground">
+                    {visibleDetections.length} of {job.detections.length} shown
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <label htmlFor="confidence-threshold">Minimum confidence</label>
+                    <span className="tabular-nums">{Math.round(minConfidence * 100)}%</span>
+                  </div>
+                  <input
+                    id="confidence-threshold"
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={minConfidence}
+                    onChange={(e) => setMinConfidence(Number(e.target.value))}
+                    className="mt-1.5 w-full accent-primary"
+                  />
+                  {hiddenCount > 0 && (
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      {hiddenCount} low-confidence match{hiddenCount === 1 ? "" : "es"} hidden — lower the
+                      threshold to review them.
+                    </p>
+                  )}
                 </div>
                 <div className="max-h-[520px] overflow-y-auto pr-1">
                   <DetectionReviewList
-                    detections={job.detections}
+                    detections={visibleDetections}
                     activeId={activeHighlightId}
                     onHover={setActiveHighlightId}
                     onReview={handleReview}
