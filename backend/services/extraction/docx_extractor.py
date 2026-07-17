@@ -65,14 +65,29 @@ def _iter_block_items(parent: object) -> Iterator[object]:
 
 
 def _iter_table_cells(table: object) -> Iterator[object]:
-    """Yield unique table cells, recursing into merged-cell-safe cell objects."""
-    seen_cells: set[int] = set()
+    """Yield unique table cells, skipping the repeats `row.cells` produces
+    for a merged span (python-docx reports a merged cell at every grid
+    position it covers).
+
+    Tracks the actual `_tc` oxml elements in the set, not `id(cell._tc)` —
+    `row.cells` constructs a fresh `_Cell` wrapper on every access, and if
+    only the id() is kept, the wrapper is immediately eligible for garbage
+    collection; CPython is then free to recycle that exact memory address
+    for the *next* cell's wrapper, making two genuinely different cells
+    compare equal. Confirmed in production against a real 4-column,
+    9-row table: every column-1..3 cell in every data row false-positived
+    as a duplicate of an earlier, unrelated cell, silently dropping the
+    designation/ID/address of 7 of 8 people from extraction (and therefore
+    from redaction) — only column 0 survived. Keeping the elements
+    themselves in the set holds a strong reference, so identity remains
+    meaningful for the lifetime of the check."""
+    seen_cells: set[object] = set()
     for row in table.rows:
         for cell in row.cells:
-            cell_id = id(cell._tc)
-            if cell_id in seen_cells:
+            tc = cell._tc
+            if tc in seen_cells:
                 continue
-            seen_cells.add(cell_id)
+            seen_cells.add(tc)
             yield cell
 
 

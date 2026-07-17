@@ -58,6 +58,38 @@ def test_docx_extraction_includes_headers_footers_tables_and_redacts_with_format
     assert body_runs[1].bold is True
 
 
+def test_docx_extraction_captures_every_cell_in_a_multi_row_multi_column_table(tmp_path) -> None:
+    """Regression test for a real, high-severity bug found against an actual
+    200+ page document: a Board of Directors table (Name/Designation/DIN/
+    Address, 8 rows) extracted only the Name column — every other cell in
+    every data row silently vanished.
+
+    Root cause: `_iter_table_cells`'s dedup (for genuinely merged cells)
+    tracked `id(cell._tc)` instead of the `_tc` object itself. `row.cells`
+    builds a fresh `_Cell` wrapper on each access; keeping only the id
+    let CPython recycle a just-freed wrapper's memory address for the
+    *next* cell's wrapper, making unrelated cells compare as duplicates.
+    A small 1x1 table (the only kind covered elsewhere in this file) never
+    has enough live/dead object churn to reproduce it — this table is sized
+    to reliably trigger the same object-identity recycling in real CPython."""
+    source = tmp_path / "source.docx"
+
+    document = docx.Document()
+    table = document.add_table(rows=5, cols=4)
+    expected_cells = []
+    for row in range(5):
+        for col in range(4):
+            value = f"R{row}C{col}-{'xyzw'[col]}"
+            table.cell(row, col).text = value
+            expected_cells.append(value)
+    document.save(source)
+
+    text = DocxExtractor().extract(str(source), "doc-1").flattened_text()
+
+    missing = [value for value in expected_cells if value not in text]
+    assert missing == [], f"cells silently dropped from extraction: {missing}"
+
+
 def test_docx_redactor_does_not_replace_partial_words(tmp_path) -> None:
     source = tmp_path / "source.docx"
     output = tmp_path / "output.docx"
