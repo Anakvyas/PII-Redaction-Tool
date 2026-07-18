@@ -40,9 +40,7 @@ OCR** for detection, and **Faker** for realistic fake replacements.
 > | **Total before a single detector runs**     | **~520 MB** |
 >
 > That's already over the 512MB cap for a document this dense, before
-> detection begins. **This is not a document-size bug** — it's a hosting
-> RAM ceiling. A host with more headroom (e.g. Railway's Hobby tier,
-> ~$5/mo) removes it entirely with no code changes.
+> detection begins.
 
 ## ✨ Features
 
