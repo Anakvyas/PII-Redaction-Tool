@@ -15,14 +15,34 @@ OCR** for detection, and **Faker** for realistic fake replacements.
 
 ## 🔗 Live Demo
 
-|                  | Link                  |
-| ---------------- | --------------------- |
-| 🌐 Frontend      | https://pii-redaction-tool-livid.vercel.app |
+|                  | Link                                         |
+| ---------------- | -------------------------------------------- |
+| 🌐 Frontend      | https://pii-redaction-tool-livid.vercel.app  |
 | ⚙️ Backend API | https://pii-redaction-tool-99vj.onrender.com |
 
 > ⚠️ **First load notice**: if the backend is on Render's free tier, it
 > spins down after 15 minutes of inactivity. The first request after that
 > takes 30–50s to wake up — this is a Render free-tier limitation, not a bug.
+
+> 🚨 **Large document notice**: very large or table-dense documents (200+
+> pages, dozens of tables) can still crash on Render's free tier (512MB
+> RAM), even though detection itself runs in memory-bounded chunks (see
+> `services/detection_service.py`) so its memory no longer grows with
+> document length. The ceiling comes from two **fixed** costs that are
+> paid before detection ever starts — back-of-envelope, measured against a
+> real 300-page / 76-table document:
+>
+> | Stage                                             |      Measured RSS |
+> | ------------------------------------------------- | ----------------: |
+> | Baseline (FastAPI process)                        |            ~15 MB |
+> | + parsing the document (`python-docx`/`lxml`) |           ~270 MB |
+> | + loading the spaCy model (one-time)              |           ~235 MB |
+> | **Total before a single detector runs**     | **~520 MB** |
+>
+> That's already over the 512MB cap for a document this dense, before
+> detection begins. **This is not a document-size bug** — it's a hosting
+> RAM ceiling. A host with more headroom (e.g. Railway's Hobby tier,
+> ~$5/mo) removes it entirely with no code changes.
 
 ## ✨ Features
 
@@ -166,6 +186,7 @@ company-shaped text to NER. Full write-up: `deliverables/README.md`.
 | Multi-line addresses not caught as one match                | Regex expects a single-line address                      | Fragments (city, street) are often still caught |
 | Non-English (e.g. Devanagari) text in images not detected   | OCR/NER here are English-only                            | Would need a language-specific OCR pack + model |
 | No face detection in images                                 | Out of scope                                             | ID card photos are left untouched by design     |
+| Very large/table-dense docs can OOM on Render's free tier   | Parsing + model-load alone use ~520MB (see notice above) | Not a code bug — needs more host RAM           |
 
 ## 📄 License
 
