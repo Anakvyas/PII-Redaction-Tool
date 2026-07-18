@@ -1,6 +1,7 @@
 """Session-scoped fixtures for the NLP-backed detectors. Loading
-en_core_web_lg (directly, and again inside Presidio's NlpEngine) is the
-expensive part of this test suite — load each exactly once per test run."""
+en_core_web_md is the expensive part of this test suite; presidio_detector
+reuses spacy_detector's already-loaded pipeline (mirroring container.py's
+wiring) so it's loaded exactly once per test run, not twice."""
 from __future__ import annotations
 
 import pytest
@@ -30,8 +31,8 @@ def spacy_detector() -> SpacyNERDetector:
 
 
 @pytest.fixture(scope="session")
-def presidio_detector() -> PresidioDetector:
-    return PresidioDetector()
+def presidio_detector(spacy_detector: SpacyNERDetector) -> PresidioDetector:
+    return PresidioDetector(spacy_ner_detector=spacy_detector)
 
 
 @pytest.fixture(scope="session")

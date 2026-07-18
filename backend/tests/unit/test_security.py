@@ -17,7 +17,7 @@ class TestAuthDisabled:
     def test_no_api_key_configured_allows_any_request(self):
         settings = Settings(API_KEY="")
         # Should not raise, even with no header at all.
-        _run(require_api_key(x_api_key=None, settings=settings))
+        _run(require_api_key(x_api_key=None, api_key=None, settings=settings))
 
 
 class TestAuthEnabled:
@@ -28,7 +28,7 @@ class TestAuthEnabled:
     def test_missing_header_is_rejected(self):
         settings = Settings(API_KEY="s3cr3t-key")
         with pytest.raises(UnauthorizedError):
-            _run(require_api_key(x_api_key=None, settings=settings))
+            _run(require_api_key(x_api_key=None, api_key=None, settings=settings))
 
     def test_wrong_key_is_rejected(self):
         settings = Settings(API_KEY="s3cr3t-key")
@@ -38,7 +38,7 @@ class TestAuthEnabled:
     def test_empty_string_header_is_rejected(self):
         settings = Settings(API_KEY="s3cr3t-key")
         with pytest.raises(UnauthorizedError):
-            _run(require_api_key(x_api_key="", settings=settings))
+            _run(require_api_key(x_api_key="", api_key=None, settings=settings))
 
     def test_key_is_case_sensitive(self):
         settings = Settings(API_KEY="S3cr3t-Key")
@@ -51,3 +51,18 @@ class TestAuthEnabled:
         settings = Settings(API_KEY="s3cr3t-key")
         with pytest.raises(UnauthorizedError):
             _run(require_api_key(x_api_key="s3cr3t", settings=settings))
+
+    def test_query_param_is_accepted_when_header_is_absent(self):
+        """EventSource (used for the job /stream SSE endpoint) can't set
+        custom headers, so it sends the key as ?api_key= instead."""
+        settings = Settings(API_KEY="s3cr3t-key")
+        _run(require_api_key(x_api_key=None, api_key="s3cr3t-key", settings=settings))
+
+    def test_wrong_query_param_is_rejected(self):
+        settings = Settings(API_KEY="s3cr3t-key")
+        with pytest.raises(UnauthorizedError):
+            _run(require_api_key(x_api_key=None, api_key="wrong-key", settings=settings))
+
+    def test_header_takes_precedence_over_query_param(self):
+        settings = Settings(API_KEY="s3cr3t-key")
+        _run(require_api_key(x_api_key="s3cr3t-key", api_key="wrong-key", settings=settings))

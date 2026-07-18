@@ -1,4 +1,4 @@
-"""Exercises the real en_core_web_lg model via the session-scoped fixture in
+"""Exercises the real en_core_web_md model via the session-scoped fixture in
 conftest.py — slower than the regex/date tests, but this is the only way to
 pin down actual NER behavior (including its known false-positive shape)."""
 from schemas.common import PIIType
@@ -20,7 +20,7 @@ class TestPersonDetection:
 
 class TestCompanyDetection:
     def test_known_suffix_boosts_confidence_above_base(self, spacy_detector):
-        entities = spacy_detector.detect("She works at Globex Corporation.", {PIIType.COMPANY})
+        entities = spacy_detector.detect("She works at Umbrella Corporation.", {PIIType.COMPANY})
         companies = [e for e in entities if e.pii_type == PIIType.COMPANY]
         assert companies
         assert companies[0].confidence > 0.8  # base confidence is 0.8; suffix should boost it
@@ -36,7 +36,7 @@ class TestCompanyDetection:
 
 class TestSpanIntegrity:
     def test_span_matches_raw_value_in_source_text(self, spacy_detector):
-        text = "Jane Doe works at Globex Corporation."
+        text = "Jane Doe works at Umbrella Corporation."
         entities = spacy_detector.detect(text, {PIIType.PERSON, PIIType.COMPANY})
         for entity in entities:
             assert text[entity.span.start : entity.span.end] == entity.raw_value

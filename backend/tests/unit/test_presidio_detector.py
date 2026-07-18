@@ -1,4 +1,4 @@
-"""Exercises Presidio's AnalyzerEngine (spaCy en_core_web_lg NlpEngine plus
+"""Exercises Presidio's AnalyzerEngine (spaCy en_core_web_md NlpEngine plus
 Presidio's built-in recognizers) via the session-scoped fixture."""
 from schemas.common import PIIType
 

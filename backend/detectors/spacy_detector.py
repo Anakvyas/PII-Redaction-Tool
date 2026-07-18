@@ -23,7 +23,7 @@ _CONFIDENCE = {
 
 
 class SpacyNERDetector(BaseDetector):
-    def __init__(self, model_name: str = "en_core_web_lg") -> None:
+    def __init__(self, model_name: str = "en_core_web_md") -> None:
         self._model_name = model_name
         self._nlp = None
 
@@ -50,6 +50,11 @@ class SpacyNERDetector(BaseDetector):
                     f"Run: python -m spacy download {self._model_name}"
                 ) from exc
         return self._nlp
+
+    def get_nlp(self):
+        """Expose the loaded pipeline so PresidioDetector can reuse it instead
+        of loading its own second copy of the same model (see container.py)."""
+        return self._load()
 
     def detect(self, text: str, pii_types: set[PIIType]) -> list[PIIEntity]:
         wanted_labels = {label for label, t in _LABEL_MAP.items() if t in pii_types}

@@ -1,10 +1,16 @@
-"""Microsoft Presidio adapter, backed by spaCy's large English model. Presidio
+"""Microsoft Presidio adapter, backed by spaCy's English model. Presidio
 brings its own well-tested recognizers for the format-anchored types (email,
 phone via `phonenumbers`, credit card, SSN, IP) plus spaCy-NER-derived PERSON/
-ORGANIZATION/LOCATION/DATE_TIME — this is the primary statistical source, with
-RegexDetector and SpacyNERDetector left in the registry as independent,
-corroborating signals (see DetectionPipeline._boost_corroborated)."""
+ORGANIZATION/LOCATION/DATE_TIME. RegexDetector and SpacyNERDetector are still
+independent, corroborating signals for the format-anchored/regex types (see
+DetectionPipeline._boost_corroborated); for the NER-derived types (PERSON,
+COMPANY) this detector reuses SpacyNERDetector's already-loaded pipeline (see
+container.py) rather than loading a second full copy of the model, so those
+two no longer vote independently on NER spans — corroboration there now comes
+from the labeled-field detector and regex company-suffix boosting instead."""
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from detectors.base import BaseDetector
 from core.exceptions import DetectorUnavailableError
@@ -12,6 +18,9 @@ from schemas.common import PIIEntity, PIIType, TextSpan
 from utils.fuzzy import DOB_CONTEXT_KEYWORDS, adjust_company_confidence, fuzzy_contains_keyword
 from utils.ids import new_id
 from utils.text import context_window, preceding_word
+
+if TYPE_CHECKING:
+    from detectors.spacy_detector import SpacyNERDetector
 
 _ENTITY_MAP: dict[str, PIIType] = {
     "PERSON": PIIType.PERSON,
@@ -27,8 +36,9 @@ _ENTITY_MAP: dict[str, PIIType] = {
 
 
 class PresidioDetector(BaseDetector):
-    def __init__(self, model_name: str = "en_core_web_lg") -> None:
+    def __init__(self, model_name: str = "en_core_web_md", spacy_ner_detector: "SpacyNERDetector | None" = None) -> None:
         self._model_name = model_name
+        self._spacy_ner_detector = spacy_ner_detector
         self._analyzer = None
 
     @property
@@ -43,20 +53,30 @@ class PresidioDetector(BaseDetector):
             return self._analyzer
         try:
             from presidio_analyzer import AnalyzerEngine
-            from presidio_analyzer.nlp_engine import NlpEngineProvider
+            from presidio_analyzer.nlp_engine import NlpEngineProvider, SpacyNlpEngine
         except ImportError as exc:
             raise DetectorUnavailableError(
                 "presidio-analyzer is not installed. Run: pip install presidio-analyzer"
             ) from exc
 
         try:
-            provider = NlpEngineProvider(
-                nlp_configuration={
-                    "nlp_engine_name": "spacy",
-                    "models": [{"lang_code": "en", "model_name": self._model_name}],
-                }
-            )
-            nlp_engine = provider.create_engine()
+            if self._spacy_ner_detector is not None:
+                # Reuse the already-loaded pipeline instead of letting Presidio
+                # spacy.load() its own second copy of the same model — that
+                # double load was the whole reason this app OOM'd on Render's
+                # free tier. SpacyNlpEngine treats `self.nlp` as already loaded
+                # once it's a non-None dict, so AnalyzerEngine below skips its
+                # own .load() call entirely.
+                nlp_engine = SpacyNlpEngine(models=[{"lang_code": "en", "model_name": self._model_name}])
+                nlp_engine.nlp = {"en": self._spacy_ner_detector.get_nlp()}
+            else:
+                provider = NlpEngineProvider(
+                    nlp_configuration={
+                        "nlp_engine_name": "spacy",
+                        "models": [{"lang_code": "en", "model_name": self._model_name}],
+                    }
+                )
+                nlp_engine = provider.create_engine()
         except OSError as exc:
             raise DetectorUnavailableError(
                 f"spaCy model '{self._model_name}' is not installed. "

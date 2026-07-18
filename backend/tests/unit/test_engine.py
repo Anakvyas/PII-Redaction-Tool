@@ -8,7 +8,7 @@ from schemas.common import PIIType
 
 SAMPLE_TEXT = (
     "Employee Onboarding Form\n\n"
-    "Jane Doe works at Globex Corporation and can be reached at "
+    "Jane Doe works at Umbrella Corporation and can be reached at "
     "jane.doe@example.com or 555-123-4567. Her SSN on file is 234-56-7890 "
     "and her date of birth is 03/14/1985. The company card charged was "
     "4539148803436467, and her last login came from IP 192.168.1.15. "
@@ -21,7 +21,7 @@ REQUIRED_KEYS = {"type", "text", "start", "end", "confidence"}
 @pytest.fixture(scope="module", autouse=True)
 def _use_shared_pipeline(detection_pipeline):
     # Reuse the session-scoped models from conftest instead of letting
-    # engine.py's own container singleton load en_core_web_lg a second time.
+    # engine.py's own container singleton load en_core_web_md a second time.
     # Module-scoped (not pytest's function-scoped `monkeypatch`) so it stays
     # applied for every test in this file, including the module-scoped
     # `all_detections` fixture below.
@@ -69,7 +69,7 @@ class TestCoverageAcrossAllNineTypes:
         "pii_type,expected_text",
         [
             (PIIType.PERSON, "Jane Doe"),
-            (PIIType.COMPANY, "Globex Corporation"),
+            (PIIType.COMPANY, "Umbrella Corporation"),
             (PIIType.EMAIL, "jane.doe@example.com"),
             (PIIType.PHONE, "555-123-4567"),
             (PIIType.SSN, "234-56-7890"),

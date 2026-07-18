@@ -1,6 +1,6 @@
 """The PII Detection Engine's public entry point.
 
-Fans out across Presidio (spaCy en_core_web_lg), a second independent spaCy
+Fans out across Presidio (spaCy en_core_web_md), a second independent spaCy
 NER pass, deterministic regex detectors, and RapidFuzz-boosted heuristics;
 merges detections, resolves overlaps, assigns a calibrated confidence score,
 and normalizes the result to a small, stable contract:

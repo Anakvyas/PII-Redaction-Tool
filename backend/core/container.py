@@ -19,12 +19,15 @@ from services.storage_service import FileStorage, build_storage
 @lru_cache
 def get_detector_registry() -> DetectorRegistry:
     settings = get_settings()
+    spacy_detector = SpacyNERDetector(model_name=settings.SPACY_MODEL)
     return DetectorRegistry(
         [
             RegexDetector(),
             DateDetector(),
-            SpacyNERDetector(model_name=settings.SPACY_MODEL),
-            PresidioDetector(model_name=settings.SPACY_MODEL),
+            spacy_detector,
+            # Reuses spacy_detector's pipeline once loaded, instead of loading
+            # a second full copy of the same model (see PresidioDetector._load).
+            PresidioDetector(model_name=settings.SPACY_MODEL, spacy_ner_detector=spacy_detector),
             LabeledFieldDetector(),
         ]
     )

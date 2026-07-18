@@ -66,7 +66,7 @@ class Settings(BaseSettings):
 
     # -- Detection defaults --
     DEFAULT_CONFIDENCE_FLOOR: float = 0.75
-    SPACY_MODEL: str = "en_core_web_lg"
+    SPACY_MODEL: str = "en_core_web_md"
 
     @field_validator("LOCAL_STORAGE_DIR")
     @classmethod

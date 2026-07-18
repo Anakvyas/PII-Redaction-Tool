@@ -109,7 +109,7 @@ No server needed — this is the core CLI. The web app wraps the same engine.
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m spacy download en_core_web_lg
+python -m spacy download en_core_web_md
 cp .env.example .env
 uvicorn main:app --reload
 ```
