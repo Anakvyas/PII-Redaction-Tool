@@ -274,3 +274,129 @@ class TestFullPipelineRun:
         assert len(result) == 1
         assert result[0].pii_type == PIIType.SSN
         assert text[result[0].span.start : result[0].span.end] == result[0].raw_value
+
+
+class TestChunkedDetection:
+    """A single nlp() call over an entire large document builds one Doc
+    object sized to the whole text — for a 200+ page document that's a real,
+    size-proportional memory cost. DetectionPipeline chunks the text for any
+    document past _CHUNK_SIZE so peak per-call memory is bounded to one
+    chunk, however long the document is. These tests use a fake registry (no
+    real NLP model) that finds a literal marker string, so they can pin down
+    the exact chunk-offset-shifting and boundary-overlap behavior fast."""
+
+    def test_short_document_is_not_chunked(self):
+        from services.detection_service import _CHUNK_SIZE
+
+        calls = []
+
+        class _CountingRegistry:
+            def detect_all(self, text, pii_types):
+                calls.append(text)
+                return []
+
+        text = "short document, well under the chunk size"
+        assert len(text) <= _CHUNK_SIZE
+        pipeline = DetectionPipeline(_CountingRegistry())
+        pipeline._detect_in_chunks(text, {PIIType.PERSON})
+
+        assert calls == [text]
+
+    def test_long_document_is_split_into_multiple_chunks(self):
+        from services.detection_service import _CHUNK_SIZE
+
+        calls = []
+
+        class _CountingRegistry:
+            def detect_all(self, text, pii_types):
+                calls.append(text)
+                return []
+
+        text = "x" * (_CHUNK_SIZE * 3)
+        pipeline = DetectionPipeline(_CountingRegistry())
+        pipeline._detect_in_chunks(text, {PIIType.PERSON})
+
+        assert len(calls) > 1
+        assert all(len(c) <= _CHUNK_SIZE for c in calls)
+
+    def test_chunks_cover_the_entire_document_with_overlap(self):
+        from services.detection_service import DetectionPipeline as _DP
+        from services.detection_service import _CHUNK_OVERLAP, _CHUNK_SIZE
+
+        text = "y" * (_CHUNK_SIZE * 2 + 500)
+        chunks = list(_DP._iter_chunks(text))
+
+        assert len(chunks) > 1
+        # every character is covered by at least one chunk
+        covered = set()
+        for chunk_text, offset in chunks:
+            covered.update(range(offset, offset + len(chunk_text)))
+        assert covered == set(range(len(text)))
+        # consecutive chunks actually overlap, not just touch
+        for (_, offset_a), (chunk_b, offset_b) in zip(chunks, chunks[1:]):
+            assert offset_b < offset_a + _CHUNK_SIZE
+            assert offset_a + _CHUNK_SIZE - offset_b <= _CHUNK_OVERLAP + 1
+
+    def test_entity_found_in_a_later_chunk_gets_correct_global_offset(self):
+        from services.detection_service import _CHUNK_SIZE
+
+        marker = "TARGET-PERSON"
+        # Padding pushes the marker well into the second chunk.
+        text = ("z" * (_CHUNK_SIZE + 100)) + marker + ("z" * 100)
+        marker_start = text.index(marker)
+
+        class _MarkerRegistry:
+            def detect_all(self, chunk_text, pii_types):
+                local = chunk_text.find(marker)
+                if local == -1:
+                    return []
+                return [
+                    _entity(
+                        pii_type=PIIType.PERSON, start=local, end=local + len(marker),
+                        raw_value=marker, confidence=0.9, source_detector="fake",
+                    )
+                ]
+
+        pipeline = DetectionPipeline(_MarkerRegistry())
+        entities = pipeline._detect_in_chunks(text, {PIIType.PERSON})
+
+        assert entities, "marker split across the chunk boundary was not found in any chunk"
+        for e in entities:
+            assert text[e.span.start : e.span.end] == marker == e.raw_value
+
+    def test_entity_found_in_both_overlapping_chunks_is_not_duplicated(self):
+        """A match that falls inside the overlap region is (by design) seen
+        by two consecutive chunk calls — run()'s existing overlap-merge step
+        must still collapse that down to one final entity, same as it would
+        for any other span conflict."""
+        from schemas.common import DocumentFormat, ExtractedDocument, TextBlock
+        from services.detection_service import _CHUNK_SIZE
+
+        marker = "TARGET-PERSON"
+        # Placed right at the boundary so it lands in the overlap window and
+        # is genuinely detected twice, once per overlapping chunk call.
+        text = ("z" * (_CHUNK_SIZE - 50)) + marker + ("z" * (_CHUNK_SIZE))
+        marker_start = text.index(marker)
+
+        class _MarkerRegistry:
+            def detect_all(self, chunk_text, pii_types):
+                local = chunk_text.find(marker)
+                if local == -1:
+                    return []
+                return [
+                    _entity(
+                        pii_type=PIIType.PERSON, start=local, end=local + len(marker),
+                        raw_value=marker, confidence=0.9, source_detector="fake",
+                        entity_id=f"det_{local}",
+                    )
+                ]
+
+        document = ExtractedDocument(
+            document_id="d1", format=DocumentFormat.DOCX, blocks=[TextBlock(text=text, char_offset=0)]
+        )
+        pipeline = DetectionPipeline(_MarkerRegistry())
+        result = pipeline.run(document, {PIIType.PERSON})
+
+        matches = [e for e in result if e.raw_value == marker]
+        assert len(matches) == 1
+        assert matches[0].span.start == marker_start

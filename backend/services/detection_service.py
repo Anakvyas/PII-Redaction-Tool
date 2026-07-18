@@ -34,6 +34,20 @@ _COMPANY_SUFFIX = re.compile(
 _COMPANY_SUFFIX_LOOKAHEAD_CHARS = 24
 _COMPANY_SUFFIX_MAX_EXTENSIONS = 2
 
+# Running every detector (chiefly spaCy/Presidio's NER) over an entire large
+# document in one call builds a single Doc object sized to the whole text —
+# for a 200+ page document that's a real, size-proportional memory cost on
+# top of the fixed model-loading one. Chunking bounds peak per-call memory to
+# one chunk's size no matter how long the document is. _CHUNK_OVERLAP only
+# needs to be bigger than the longest lookback any detector does (a handful
+# of characters for DOB context/preceding-word heuristics) so a boundary
+# never hides context a detector would otherwise have seen; entities that
+# still straddle a chunk boundary are caught whole in at least one of the two
+# overlapping chunks, and any resulting duplicate candidate is resolved by
+# the existing overlap-merge step below like any other span conflict.
+_CHUNK_SIZE = 40_000
+_CHUNK_OVERLAP = 1_000
+
 
 class DetectionPipeline:
     def __init__(self, registry: DetectorRegistry) -> None:
@@ -41,11 +55,57 @@ class DetectionPipeline:
 
     def run(self, document: ExtractedDocument, pii_types: set[PIIType]) -> list[PIIEntity]:
         text = document.flattened_text()
-        raw_entities = self._registry.detect_all(text, pii_types)
+        raw_entities = self._detect_in_chunks(text, pii_types)
         extended = self._extend_company_suffixes(text, raw_entities)
         boosted = self._boost_corroborated(extended)
         merged = self._merge_overlaps(boosted)
         return [self._normalize(e) for e in merged]
+
+    def _detect_in_chunks(self, text: str, pii_types: set[PIIType]) -> list[PIIEntity]:
+        if len(text) <= _CHUNK_SIZE:
+            return self._registry.detect_all(text, pii_types)
+
+        entities: list[PIIEntity] = []
+        for chunk_text, offset in self._iter_chunks(text):
+            for entity in self._registry.detect_all(chunk_text, pii_types):
+                entities.append(self._shift_entity(entity, offset))
+        return entities
+
+    @staticmethod
+    def _shift_entity(entity: PIIEntity, offset: int) -> PIIEntity:
+        if offset == 0:
+            return entity
+        span = entity.span
+        return entity.model_copy(
+            update={
+                "span": TextSpan(
+                    start=span.start + offset, end=span.end + offset, page=span.page, bbox=span.bbox
+                )
+            }
+        )
+
+    @staticmethod
+    def _iter_chunks(text: str):
+        """Yields (chunk_text, global_start_offset) windows of at most
+        _CHUNK_SIZE characters, each overlapping the previous by
+        _CHUNK_OVERLAP characters. Prefers to end a chunk on a paragraph or
+        line break near the target size instead of mid-word, purely to
+        reduce how often an entity actually straddles a boundary — not load-
+        bearing for correctness, since the overlap already guarantees that."""
+        n = len(text)
+        start = 0
+        while start < n:
+            end = min(start + _CHUNK_SIZE, n)
+            if end < n:
+                break_at = text.rfind("\n\n", start, end)
+                if break_at <= start:
+                    break_at = text.rfind("\n", start, end)
+                if break_at > start:
+                    end = break_at
+            yield text[start:end], start
+            if end >= n:
+                break
+            start = max(start + 1, end - _CHUNK_OVERLAP)
 
     @staticmethod
     def _extend_company_suffixes(text: str, entities: list[PIIEntity]) -> list[PIIEntity]:
