@@ -18,7 +18,7 @@ OCR** for detection, and **Faker** for realistic fake replacements.
 
 |                  | Link                  |
 | ---------------- | --------------------- |
-| 🌐 Frontend      | `https://pii-redaction-tool-livid.vercel.app/` |
+| 🌐 Frontend      | https://pii-redaction-tool-livid.vercel.app |
 | ⚙️ Backend API | `https://pii-redaction-tool-99vj.onrender.com` |
 
 > ⚠️ **First load notice**: if the backend is on Render's free tier, it
