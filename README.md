@@ -42,6 +42,8 @@ OCR** for detection, and **Faker** for realistic fake replacements.
 > That's already over the 512MB cap for a document this dense, before
 > detection begins.
 
+
+
 ## ✨ Features
 
 ### 🔍 Detection
