@@ -34,6 +34,11 @@ export function PdfViewer({
   const [containerWidth, setContainerWidth] = React.useState(760);
   const [numPages, setNumPages] = React.useState(0);
   const [scaleByPage, setScaleByPage] = React.useState<Record<number, number>>({});
+  // Pages get mounted (and stay mounted) once they scroll near the viewport,
+  // instead of all at once — see the IntersectionObserver effect below.
+  const [visiblePages, setVisiblePages] = React.useState<Set<number>>(() => new Set([1]));
+  const [heightByPage, setHeightByPage] = React.useState<Record<number, number>>({});
+  const pageWrapperRefs = React.useRef(new Map<number, HTMLDivElement>());
 
   React.useEffect(() => {
     const el = containerRef.current;
@@ -45,13 +50,43 @@ export function PdfViewer({
       // Rendering a page can itself toggle a vertical scrollbar (blank
       // canvases were short; real content is tall), which nudges this
       // container's width, which re-renders the page, which toggles the
-      // scrollbar again — an infinite ResizeObserver feedback loop. Only
-      // commit when the width actually moved by more than rounding noise.
-      setContainerWidth((prev) => (Math.abs(prev - next) < 1 ? prev : next));
+      // scrollbar again — an infinite ResizeObserver feedback loop.
+      // `scrollbar-gutter: stable` (globals.css) stops the scrollbar itself
+      // from moving this container, but this threshold stays as a second
+      // line of defense against sub-scrollbar-width layout noise.
+      setContainerWidth((prev) => (Math.abs(prev - next) < 4 ? prev : next));
     });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // Lazily mount pages as they approach the viewport instead of rendering
+  // every page's canvas up front — for large documents (100+ pages),
+  // mounting everything at once is what pinned CPU/memory and made the
+  // preview appear to freeze or crash.
+  React.useEffect(() => {
+    if (numPages === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const newlyVisible = entries.filter((e) => e.isIntersecting).map((e) => Number((e.target as HTMLElement).dataset.pageNumber));
+        if (newlyVisible.length === 0) return;
+        setVisiblePages((prev) => {
+          const next = new Set(prev);
+          let changed = false;
+          for (const n of newlyVisible) {
+            if (!next.has(n)) {
+              next.add(n);
+              changed = true;
+            }
+          }
+          return changed ? next : prev;
+        });
+      },
+      { rootMargin: "600px 0px" },
+    );
+    pageWrapperRefs.current.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [numPages]);
 
   const highlightsByPage = React.useMemo(() => {
     const map = new Map<number, PreviewHighlight[]>();
@@ -84,20 +119,46 @@ export function PdfViewer({
         {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNumber) => {
           const scale = scaleByPage[pageNumber];
           const pageHighlights = highlightsByPage.get(pageNumber - 1) ?? [];
+          const isVisible = visiblePages.has(pageNumber);
+          // US Letter aspect ratio as a placeholder guess until the page has
+          // rendered once and told us its real height — keeps scroll height
+          // roughly stable so pages don't jump as they mount in.
+          const placeholderHeight = heightByPage[pageNumber] ?? containerWidth * 1.294;
+
           return (
-            <div key={pageNumber} className="relative mx-auto w-fit overflow-hidden rounded-lg border border-border/70 shadow-sm">
-              <Page
-                pageNumber={pageNumber}
-                width={containerWidth}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                onLoadSuccess={(page) => {
-                  const nextScale = page.width / page.originalWidth;
-                  setScaleByPage((prev) =>
-                    prev[pageNumber] === nextScale ? prev : { ...prev, [pageNumber]: nextScale },
-                  );
-                }}
-              />
+            <div
+              key={pageNumber}
+              data-page-number={pageNumber}
+              ref={(el) => {
+                if (el) pageWrapperRefs.current.set(pageNumber, el);
+                else pageWrapperRefs.current.delete(pageNumber);
+              }}
+              className="relative mx-auto w-fit overflow-hidden rounded-lg border border-border/70 shadow-sm"
+            >
+              {isVisible ? (
+                <Page
+                  pageNumber={pageNumber}
+                  width={containerWidth}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  onLoadSuccess={(page) => {
+                    const nextScale = page.width / page.originalWidth;
+                    setScaleByPage((prev) =>
+                      prev[pageNumber] === nextScale ? prev : { ...prev, [pageNumber]: nextScale },
+                    );
+                    setHeightByPage((prev) =>
+                      prev[pageNumber] === page.height ? prev : { ...prev, [pageNumber]: page.height },
+                    );
+                  }}
+                />
+              ) : (
+                <div
+                  className="flex items-center justify-center bg-muted/30 text-xs text-muted-foreground"
+                  style={{ width: containerWidth, height: placeholderHeight }}
+                >
+                  Page {pageNumber}
+                </div>
+              )}
               {scale &&
                 pageHighlights.map((h) => (
                   <button

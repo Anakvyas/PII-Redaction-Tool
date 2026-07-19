@@ -127,6 +127,13 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    /* Reserves the vertical scrollbar's width permanently instead of only
+       when content overflows. Without this, a tall multi-page PDF preview
+       toggles the scrollbar on/off as pages progressively render, which
+       shrinks/grows every ancestor's measured width — including the PDF
+       viewer's ResizeObserver target — and was the root cause of the
+       preview visibly flickering on large documents (see pdf-viewer.tsx). */
+    scrollbar-gutter: stable;
   }
 }
 
